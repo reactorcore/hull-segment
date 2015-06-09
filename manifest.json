@@ -1,0 +1,32 @@
+{
+  "name": "Segment",
+  "description": "Install Segment in your site",
+  "picture": "picture.png",
+  "index": "ship.js",
+  "version": "0.0.1",
+  "locales": ["en"],
+  "deployment_settings":[
+    {
+      "name"       : "_selector",
+      "default"    : "body",
+      "type"       : "string",
+      "format"     : "string"
+    },
+    {
+      "name"       : "_placement",
+      "default"    : "append",
+      "type"       : "string",
+      "format"     : "string"
+    }
+  ],
+  "settings": [
+    {
+      "name":"project_id",
+      "title": "Segment ID",
+      "description":"Segment Code, found in Project Settings > API Keys",
+      "type": "string",
+      "format": "text"
+    }
+  ],
+  "resources": []
+}
