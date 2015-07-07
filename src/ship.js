@@ -19,7 +19,6 @@ function start(element, deployment, hull) {
 
   function identify(me) {
     if (me && window.analytics) {
-      debugger;
       const services = Hull.config().services.analytics || {};
       const user = { id: me.id, name: me.name, email: me.email, username: me.username};
       const options = {};
