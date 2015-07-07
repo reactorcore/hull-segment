@@ -8,6 +8,7 @@ var del              = require("del");
 var runSequence      = require("run-sequence");
 var notifier         = require("node-notifier");
 var ngrok            = require("ngrok");
+var ghPages         = require("gh-pages");
 
 var gulp             = require("gulp");
 var gulpLoadPlugins  = require("gulp-load-plugins");
@@ -182,5 +183,5 @@ gulp.task("webpack:server", function() {
 // Deploy production bundle to gh-pages.
 gulp.task("gh:deploy", function (callback) {
   notify("Deploying "+config.outputFolder+" to Github Pages");
-  $.ghPages.publish(path.join(process.cwd(), config.outputFolder), callback);
+  ghPages.publish(path.join(process.cwd(), config.outputFolder), callback);
 });
