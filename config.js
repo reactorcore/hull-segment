@@ -30,6 +30,8 @@ function gulpDest(out){
   return path.join(outputFolder,assetsFolder,out);
 }
 
+var jsFiles = ["src/**/*.js", "src/**/*.jsx"];
+
 var files = {
   "src/vendors/**/*" : gulpDest("vendors/"),
   "src/images/**/*"  : gulpDest("images/"),
@@ -79,6 +81,7 @@ var cssIncludes   = modulesDirectories.map(function(include){
 var loaders = [
   {test: /\.json$/,                loaders: ["json-loader"] },
   {test: /\.js$/,                  loaders: ["babel-loader"], exclude: /node_modules|bower_components/},
+  {test: /\.(css|scss)$/,          loaders: ["style/useable", "css-loader", "autoprefixer-loader?browsers=last 2 version", "sass-loader?outputStyle=expanded&"+cssIncludes]}
 ] ;
 
 // We remove the "dist" from the filenames for demo and index.html in package.json
@@ -103,6 +106,7 @@ module.exports = {
   displayName        : displayName,
 
   files              : files,
+  jsFiles            : jsFiles,
 
   outputFolder       : outputFolder,
   assetsFolder       : assetsFolder,
