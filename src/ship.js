@@ -1,6 +1,7 @@
 /* global require, Hull*/
 
 const segment = require('./segment');
+const camelize = require('camelize');
 segment();
 
 // function getProperty(obj, propertyName) {
@@ -18,26 +19,37 @@ function start(element, deployment, hull) {
   }
 
   function identify(me) {
-    if (me && window.analytics) {
-      const services = Hull.config().services.analytics || {};
-      const user = { id: me.id, name: me.name, email: me.email, username: me.username};
-      const options = {};
-      if (services && services.intercom) {
-        options.integrations = { Intercom: { user_hash: services.intercom.user_hash } };
+    if (window.analytics){
+      if (me) {
+        const services = Hull.config().services.analytics || {};
+        const user = { id: me.id, name: me.name, email: me.email, username: me.username};
+        const options = {};
+        if (services && services.intercom) {
+          options.integrations = { Intercom: { user_hash: services.intercom.user_hash } };
+        }
+        window.analytics.identify(user.id, user, options);
+      } else {
+        window.analytics.reset();
       }
-      window.analytics.identify(user.id, user, options);
     }
   }
   // const email = me.email || getProperty(me, 'email');
   // const name = me.name || me.username || getProperty(me, 'name') || getProperty(me, 'username') || email;
 
   function track(payload) {
-    if (window.analytics) {
+    if (window.analytics && payload) {
       window.analytics.track(payload.event, payload.params);
     }
   }
 
+  function traits(payload){
+    if (window.analytics && payload) {
+      window.analytics.identify(camelize(payload));
+    }
+  }
+
   Hull.on('hull.track', track);
+  Hull.on('hull.traits', traits);
   Hull.on('hull.user.*', identify);
   identify(hull.currentUser());
 }
