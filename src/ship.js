@@ -24,8 +24,8 @@ function start(element, deployment, hull) {
         const services = Hull.config().services.analytics || {};
         const user = { id: me.id, name: me.name, email: me.email, username: me.username};
         const options = {};
-        if (services && services.intercom) {
-          options.integrations = { Intercom: { user_hash: services.intercom.user_hash } };
+        if (services && services.intercom && services.intercom.credentials) {
+          options.integrations = { Intercom: { user_hash: services.intercom.credentials.user_hash } };
         }
         window.analytics.identify(user.id, user, options);
       } else {
