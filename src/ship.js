@@ -29,7 +29,7 @@ function start(element, deployment, hull) {
         }
         window.analytics.identify(user.id, user, options);
       } else {
-        if(window.analytics.reset){
+        if (window.analytics.reset){
           window.analytics.reset();
         }
       }
