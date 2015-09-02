@@ -29,7 +29,9 @@ function start(element, deployment, hull) {
         }
         window.analytics.identify(user.id, user, options);
       } else {
-        window.analytics.reset();
+        if(window.analytics.reset){
+          window.analytics.reset();
+        }
       }
     }
   }
