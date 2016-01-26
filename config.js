@@ -25,20 +25,20 @@ var entry = {
   ship:  "./"+sourceFolder+"/ship.js"
 };
 
-// ADDITIONAL FILES TO BE COPIED BY GULP
-function gulpDest(out){
-  return path.join(outputFolder,assetsFolder,out);
-}
-
 var jsFiles = ["src/**/*.js", "src/**/*.jsx"];
 
 var files = {
-  "src/vendors/**/*" : gulpDest("vendors/"),
-  "src/images/**/*"  : gulpDest("images/"),
-  "manifest.json"    : outputFolder,
-  "src/*.png"        : outputFolder,
-  "src/*.html"       : outputFolder,
-  "CNAME"            : outputFolder,
+  'src/vendors/**/*': path.join(outputFolder, assetsFolder, 'vendors'),
+  'src/images/**/*': path.join(outputFolder, assetsFolder, 'images'),
+  'src/icons/**/*': path.join(outputFolder, assetsFolder, 'icons'),
+  'src/locales/**/*': path.join(outputFolder, 'locales'),
+  'manifest.json': outputFolder,
+  'src/*.ico': outputFolder,
+  'src/*.md': outputFolder,
+  'src/*.jpg': outputFolder,
+  'src/*.png': outputFolder,
+  'src/*.html': outputFolder,
+  'CNAME': outputFolder,
 };
 
 var libName = pkg.name;
@@ -60,7 +60,7 @@ var output = {
   filename: "[name].js",
   chunkFileName: "[name].chunk.js",
   libraryTarget: "umd",
-  library: displayName,
+  library: 'Hull'+displayName+'Ship',
   publicPath: assetsFolder+"/"
 };
 
