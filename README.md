@@ -3,8 +3,6 @@
 
 Integrates [Segment](http://segment.com) in your site without any code.
 
-[DEMO](http://hull-ships.github.io/hull-segment/)
-
 ---
 
 ### Using :
