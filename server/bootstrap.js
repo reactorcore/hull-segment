@@ -15,7 +15,7 @@ function message(payload={}){
 
 
 export default function bootstrap(app, config, processors){
-  app.get('/install', install.bind(null, config));
+  app.get('/install', install(config));
 
   const bus = new Bus();
 
