@@ -46,13 +46,10 @@
     "hull": "^0.5.1",
     "json-loader": "^0.5.3",
     "minimist": "^1.2.0",
-    "optimizely-node": "0.0.3",
     "rimraf": "^2.4.3",
     "webpack": "^1.12.2",
-    "webpack-dev-middleware": "^1.2.0"
-  },
-  "devDependencies": {
-    "babel-core": "^5.5.8",
-    "lodash": "^3.10.1"
+    "webpack-dev-middleware": "^1.2.0",
+    "lodash": "^3.10.1",
+    "babel-core": "^5.5.8"
   }
 }
