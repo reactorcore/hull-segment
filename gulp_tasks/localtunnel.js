@@ -6,12 +6,11 @@ var assign = require("object-assign");
 module.exports = function(gulp, config) {
 
   gulp.task('localtunnel', function(callback) {
-    console.log(config.localtunnel)
-    var tunnel = localtunnel(config.serverPort, config.localtunnel, function(error, tunnel) {
+    localtunnel(config.serverPort, config.localtunnel, function(error, tunnel) {
       if (error) throw new gutil.PluginError('ship:server', error);
       var url = tunnel.url.replace('https', 'http');
       gutil.log('[ship:server]', url);
-      callback(tunnel)
+      callback(null, tunnel)
     });
     if (!config.localtunnel) {
       return callback();

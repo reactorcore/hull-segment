@@ -29,5 +29,15 @@
       "format": "text"
     }
   ],
-  "resources": []
+  "private_settings":[
+    {
+      "name": "write_key",
+      "type": "string",
+      "title": "Segment Write Key",
+      "description": "Found under Settings > keys",
+      "required": true
+    }
+  ],
+  "resources": [],
+  "subscriptions" : [ { "url" : "/notify" } ]
 }

@@ -15,10 +15,11 @@ var manifest = require('./manifest.json');
 var sourceFolder = 'src';
 var outputFolder = 'dist';
 var assetsFolder = '';
-var serverPort = process.env.PORT || 8081;
+var serverPort  = process.env.PORT || 8081;
+var backendPort = 8032;
 var previewUrl = 'http://localhost:' + serverPort;
 
-var hotReload = true;
+var hotReload = false;
 
 var libName = pkg.name;
 var displayName = manifest.name || libName;
@@ -34,8 +35,7 @@ var displayName = manifest.name || libName;
   --------------------------------
 */
 var entry = {
-  ship: './' + sourceFolder + '/ship.js',
-  index: './' + sourceFolder + '/index.js',
+  ship: './' + sourceFolder + '/ship.js'
 };
 
 /*
@@ -149,7 +149,7 @@ var postcss = [
 
 
 var babelQuery = {
-  presets: ['react', 'es2015', 'stage-0', 'lodash']
+  presets: ['es2015', 'stage-0']
 }
 
 // about babel : it's VERY SLOW. DO NOT APPLY IT TO EVERY SOURCE FILE. see the Excludes we applied
@@ -159,9 +159,9 @@ var loaderLibrary = {
   devCss: {test: /\.(css|scss)$/, loaders: ['style?singleton=true', 'css?modules&importLoaders=1&localIdentName=_[name]__[local]___[hash:base64:5]', 'postcss'] },
   file: {test: /\.jpe?g$|\.gif$|\.png|\.woff$|\.ttf$|\.wav$|\.mp3$/, loader: 'file' },
   svg: {test: /\.svg$/, loader: 'svg-inline' },
-  js: {test: /\.(js)$/, loader: 'babel', query: babelQueryexclude: /node_modules|src\/vendors/ },
+  js: {test: /\.(js)$/, loader: 'babel', query: babelQuery, exclude: /node_modules|src\/vendors/ },
   prodJSX: {test: /\.(jsx)$/, loader: 'babel', query: babelQuery },
-  devJSX: {test: /\.(jsx)$/, loaders: ['react-hot', 'babel'], query: babelQuery},
+  devJSX: {test: /\.(jsx)$/, loaders: 'babel', query: babelQuery},
 };
 
 var devLoaders = [
@@ -266,6 +266,7 @@ module.exports = {
   outputFolder: outputFolder,
   assetsFolder: assetsFolder,
   serverPort: serverPort,
+  backendPort: backendPort,
   previewUrl: previewUrl,
 
   devEntry: devEntry,

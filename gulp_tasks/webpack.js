@@ -48,15 +48,21 @@ module.exports = function(gulp, config){
 
   // Launch webpack dev server.
   gulp.task("webpack:server", function(callback) {
-
-    var taskName = "webpack:server";
-    var server = new WebpackDevServer(webpack(webpackConfig.development), {
+    var opts = {
       noInfo      : false,
       stats       : {colors: true },
       headers     : { "Access-Control-Allow-Origin": "*" },
       contentBase : config.outputFolder,
       hot         : config.hotReload
-    }).listen(config.serverPort, function(err) {
+    }
+    if(config && config.backendPort){
+      opts.proxy = {
+        '*': 'http://localhost:'+config.backendPort+'/'
+      }
+    }
+    var taskName = "webpack:server";
+    var server = new WebpackDevServer(webpack(webpackConfig.development), opts)
+      .listen(config.serverPort, function(err) {
 
       webpackFeedbackHandler(err)
 

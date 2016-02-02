@@ -1,6 +1,7 @@
 'use strict';
 /* global require, console*/
 
+require("babel/register");
 
 var gulp        = require('gulp');
 var runSequence = require('run-sequence');
@@ -15,10 +16,10 @@ var config      = require('./config');
   'lint',
   'localtunnel',
   'webpack',
+  'express'
   // 'iconfont',
   // 'iconsprite',
   // 'sass',
-  // 'serve',
   // 'sketch',
 ].map(function(task) { require('./gulp_tasks/' + task + '.js')(gulp, config);});
 
@@ -39,7 +40,7 @@ gulp.task('serve', function(callback) {
 
 // Batch, Public Tasks
 gulp.task('server', function(callback) {
-  runSequence('prepare', 'watch', 'serve', callback);
+  runSequence('prepare', 'watch', 'express', 'serve', callback);
 });
 
 gulp.task('build', function(callback) {

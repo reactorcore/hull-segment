@@ -22,19 +22,18 @@ npm install
 gulp
 ```
 
-##### Local Setup
-- You need a publicly-hosted dev version. The easiest way is with Ngrok.
-- Ships are pre-configured to use the name in `package.json` as a subdomain if a `NGROK_AUTHTOKEN` is present in the environment.
+# Secret Exchange: 
 
-> For instance, this ship will be accessible on on `https://hull-segment.ngrok.com/`
+Go to your console and type: 
 
-##### Hull Setup
+```
+Hull.api({
+  path: '563b8caf99585f7a30000077/secret',
+  provider:'admin',
+  organization:'a239c5b2'
+})
+```
 
-- Create a ship as usual : "Ships > Add New". Enter `https://hull-segment.ngrok.com/`.
-- Go to the "Advanced" Tab, enter the public dev URL for your fork in "Ship URL" and save.
-- Create a platform with your public demo url: `https://hull-segment.ngrok.com/index.html`
-- Copy Platform Snippet in `index.html`
-- Embed the ship in the platform using a selector that can be found in your `index.html`
-- Visit `https://hull-segment.ngrok.com/index.html`
-# hull-segment
-# hull-segment
+Get the secret, paste in there: 
+
+`CURL http://ship.dev/install?org=a239c5b2.hullbeta.io&shipId=563b8caf99585f7a30000077&shipSecret=XXX`

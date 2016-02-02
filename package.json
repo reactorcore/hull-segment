@@ -10,6 +10,10 @@
     "email": "contact@hull.io",
     "url": "https://github.com/hull"
   },
+  "engines": {
+    "node": "5.x",
+    "npm": "2.x"
+  },
   "repository": {
     "type": "git",
     "url": "git://github.com/hull-ships/hull-segment"
@@ -18,7 +22,7 @@
     "url": "https://github.com/hull-ships/hull-segment/issues"
   },
   "scripts": {
-    "start": "./node_modules/.bin/gulp server"
+    "start": "./node_modules/bin/gulp"
   },
   "keywords": [
     "hull",
@@ -26,8 +30,14 @@
     "hull-ship"
   ],
   "dependencies": {
+    "analytics-node": "^2.0.1",
+    "aws-snsclient": "^0.2.0",
+    "bluebird": "^3.2.1",
+    "body-parser": "^1.14.2",
     "camelize": "^1.0.0",
-    "gulp": "^3.9.0"
+    "express": "^4.13.4",
+    "gulp": "^3.9.0",
+    "hull": "^0.5.1"
   },
   "devDependencies": {
     "autoprefixer": "^6.3.1",
@@ -36,6 +46,8 @@
     "babel-eslint": "^5.0.0-beta8",
     "babel-loader": "^6.2.1",
     "babel-plugin-lodash": "^2.0.1",
+    "babel-preset-es2015": "^6.3.13",
+    "babel-preset-stage-0": "^6.3.13",
     "css": "^2.2.1",
     "css-loader": "^0.23.1",
     "cssnano": "^3.4.0",
@@ -43,7 +55,6 @@
     "del": "^2.2.0",
     "eslint": "^1.10.3",
     "eslint-config-airbnb": "^4.0.0",
-    "eslint-plugin-react": "^3.16.1",
     "extract-text-webpack-plugin": "^1.0.1",
     "file-loader": "^0.8.5",
     "gh-pages": "^0.9.0",
@@ -54,6 +65,7 @@
     "gulp-eslint": "^1.1.1",
     "gulp-imagemin": "^2.4.0",
     "gulp-invalidate-cloudfront": "^0.1.2",
+    "gulp-live-server": "0.0.29",
     "gulp-rename": "^1.2.2",
     "gulp-util": "^3.0.7",
     "json-loader": "^0.5.4",
@@ -75,13 +87,12 @@
     "postcss-round-subpixels": "^1.2.0",
     "postcss-vmin": "^2.0.0",
     "precss": "^1.4.0",
-    "react-hot-loader": "^1.3.0",
     "run-sequence": "^1.1.5",
     "stats-webpack-plugin": "^0.3.0",
     "style-loader": "^0.13.0",
     "svg-inline-loader": "^0.4.0",
     "touch": "1.0.0",
-    "webpack": "^2.0.6-beta",
-    "webpack-dev-server": "^1.14.1"
+    "webpack": "^1.12.2",
+    "webpack-dev-middleware": "^1.2.0"
   }
 }

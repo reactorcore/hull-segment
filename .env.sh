@@ -1,0 +1,1 @@
+export SEGMENT_WRITE_KEY='2p1TkDwrtC2GBOewlZSDodFAHteohFJ2'
