@@ -1,4 +1,3 @@
-import assign from 'object-assign';
 import { resolve } from 'path';
 import { readFileSync } from 'fs';
 
@@ -14,5 +13,5 @@ export function config(env={}, options={}) {
   }
 
 
-  return assign({}, defaults, cfg);
+  return {...defaults, ...cfg};
 }

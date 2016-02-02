@@ -34,12 +34,15 @@
   "dependencies": {
     "analytics-node": "^2.0.1",
     "aws-snsclient": "^0.2.0",
+    "babel": "^6.3.26",
     "bluebird": "^3.2.1",
     "body-parser": "^1.14.2",
     "camelize": "^1.0.0",
     "express": "^4.13.4",
     "gulp": "^3.9.0",
-    "hull": "^0.5.1"
+    "hull": "^0.5.1",
+    "lodash": "^4.2.0",
+    "minimist": "^1.2.0"
   },
   "devDependencies": {
     "autoprefixer": "^6.3.1",
