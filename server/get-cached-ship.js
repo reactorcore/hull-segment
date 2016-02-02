@@ -1,6 +1,5 @@
 const CACHE = {};
 
-import Promise from 'bluebird';
 import getHullClient from './get-hull-client';
 import generateShipSecret from './generate-ship-secret';
 
