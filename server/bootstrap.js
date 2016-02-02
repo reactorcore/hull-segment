@@ -1,3 +1,4 @@
+import path from 'path';
 import SNSClient from 'aws-snsclient';
 import install from './install';
 import getCachedShip from './get-cached-ship';
@@ -23,6 +24,12 @@ export default function bootstrap(app, config, processors){
     if (!payload||!ship) { return false; }
     bus.emit(name(payload), ship, message(payload));
   }
+
+  function showReadme(req,res){
+    res.redirect(`https://dashboard.hullapp.io/readme?url=https://${req.headers.host}`);
+  }
+
+  app.get('/readme', showReadme);
 
   app.post('/notify', function(req, res){
 

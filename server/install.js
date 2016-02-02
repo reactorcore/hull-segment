@@ -2,12 +2,10 @@ import getHullClient from './get-hull-client';
 import generateShipSecret from './generate-ship-secret';
 
 export default function(config, req, res){
-  const { shipId, shipSecret, orgUrl} = req.query;
+  const { id, secret, org } = req.query;
 
-  var newSecret = generateShipSecret(shipId, config.globalSecret);
-
-  return getHullClient(orgUrl, shipId, shipSecret)
-  .put(shipId + '/secret', { secret: newSecret })
+  return getHullClient(org, id, secret)
+  .put(id + '/secret', { secret: generateShipSecret(id, config.globalSecret) })
   .then(function(res) {
     res.status(200).end(JSON.stringify({ ok: true }));
   }, function(err) {

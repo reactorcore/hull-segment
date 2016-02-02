@@ -22,7 +22,9 @@
     "url": "https://github.com/hull-ships/hull-segment/issues"
   },
   "scripts": {
-    "start": "./node_modules/bin/gulp"
+    "start": "./bin/start",
+    "build": "gulp build",
+    "postinstall": "npm run build"
   },
   "keywords": [
     "hull",

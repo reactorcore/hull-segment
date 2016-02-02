@@ -22,20 +22,11 @@
   ],
   "settings": [
     {
-      "name":"project_id",
-      "title": "Segment ID",
-      "description":"Segment Code, found in Project Settings > API Keys",
+      "name":"write_key",
+      "title": "Write Key",
+      "description":"Segment Write Key, found in Project Settings > Keys",
       "type": "string",
       "format": "text"
-    }
-  ],
-  "private_settings":[
-    {
-      "name": "write_key",
-      "type": "string",
-      "title": "Segment Write Key",
-      "description": "Found under Settings > keys",
-      "required": true
     }
   ],
   "resources": [],

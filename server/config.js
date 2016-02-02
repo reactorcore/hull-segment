@@ -4,19 +4,7 @@ import { readFileSync } from 'fs';
 
 export function config(env={}, options={}) {
   var defaults = {
-    globalSecret: env.GLOBAL_SECRET || 'CHANGE_ME',
-    hull: {
-      appId: env.HULL_APP_ID,
-      orgUrl: env.HULL_ORG_URL,
-      appSecret: env.HULL_APP_SECRET
-    },
-    "ship": {
-      "private_settings": {
-        "write_key": env.SEGMENT_WRITE_KEY
-      }
-    },
-    mappings: {
-    }
+    globalSecret: env.SECRET || 'CHANGE_ME'
   };
 
   var cfg = {}, filename = options.f || env.CONFIG_FILE;

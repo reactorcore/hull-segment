@@ -1,14 +1,19 @@
 
 # Hull Segment Ship.
 
-Integrates [Segment](http://segment.com) in your site without any code.
+Sends Hull data to [Segment](http://segment.com).
 
+If you want your own instance: [![Deploy](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy?template=https://github.com/hull-ships/hull-segment)
+
+End-Users: [See Readme here](https://dashboard.hullapp.io/readme?url=https://hullsegment.herokuapp.com)
 ---
 
 ### Using :
-- Go to your Hull dashboard > Ships > Add new
-- Paste the following URL : `https://hull-ships.github.io/hull-segment/`
-- Configure your selectors in the customize panel
+
+- Go to your `Hull Dashboard > Ships > Add new`
+- Paste the URL for your Heroku deployment, or use ours : `https://hullsegment.herokuapp.com/`
+- Enter the Segment Write Key
+- Visit the Setup Page (see below)
 - Add your ship to a Platform.
 
 ### Developing : 
@@ -24,16 +29,16 @@ gulp
 
 # Secret Exchange: 
 
-Go to your console and type: 
+Go to your console in the Hull Dashboard and type: 
 
 ```
 Hull.api({
-  path: '563b8caf99585f7a30000077/secret',
+  path: 'SHIP_ID/secret',
   provider:'admin',
-  organization:'a239c5b2'
+  organization:'ORG_NAMESPACE'
 })
 ```
 
 Get the secret, paste in there: 
 
-`CURL http://ship.dev/install?org=a239c5b2.hullbeta.io&shipId=563b8caf99585f7a30000077&shipSecret=XXX`
+`http://hullsegment.herokuapp.com/install?org=a239c5b2.hullbeta.io&id=SHIP_ID&secret=SHIP_SECRET`

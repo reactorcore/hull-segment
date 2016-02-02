@@ -16,16 +16,17 @@ export default {
     
     let app = express();
 
-    app.use(express.static(path.resolve(__dirname, '..', 'dist')));
-    app.use(express.static(path.resolve(__dirname, '..', 'assets')));
 
     app.use(bodyParser.urlencoded({ extended: false }));
     app.use(bodyParser.json());
 
     const bus = bootstrap(app, config);
+
     _.map(PROCESSORS, function(value, key){
       bus.on(key, value);
     })
+
+    app.use(express.static(path.resolve(__dirname, '..', 'dist')));
 
     app.listen(port)
 

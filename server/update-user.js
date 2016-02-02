@@ -20,14 +20,11 @@ export default function(ship={}, messageString){
 
   if(!user || !user.id){ return false; }
 
-  console.log('------------');
-  console.log('Ship Found', ship.private_settings);
-  if(!ship || !ship.private_settings){
-    console.log('Invalid Ship settings',ship.private_settings)
+  if(!ship || !ship.settings){
     return false;
   }
 
-  var analytics = new Analytics(ship.private_settings.write_key);
+  var analytics = new Analytics(ship.settings.write_key);
 
   const traits = {
     ...user,

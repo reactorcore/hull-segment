@@ -4,17 +4,9 @@ const segment = require('./segment');
 const camelize = require('camelize');
 segment();
 
-// function getProperty(obj, propertyName) {
-//   for (let i = 0; i < obj.identities.length; i++) {
-//     if (obj.identities[i][propertyName]) {
-//       return obj.identities[i][propertyName];
-//     }
-//   }
-// }
-
 function start(element, deployment, hull) {
   if (window.analytics) {
-    window.analytics.load(deployment.ship.settings.project_id);
+    window.analytics.load(deployment.ship.settings.write_key);
     window.analytics.page();
   }
 
@@ -35,8 +27,6 @@ function start(element, deployment, hull) {
       }
     }
   }
-  // const email = me.email || getProperty(me, 'email');
-  // const name = me.name || me.username || getProperty(me, 'name') || getProperty(me, 'username') || email;
 
   function track(payload) {
     if (window.analytics && payload) {
