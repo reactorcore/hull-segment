@@ -2,6 +2,7 @@ import path from 'path';
 import SNSClient from 'aws-snsclient';
 import install from './install';
 import getCachedShip from './get-cached-ship';
+import getHullClient from './get-hull-client';
 
 import EventEmitter from 'events';
 class Bus extends EventEmitter {}
@@ -13,6 +14,23 @@ function message(payload={}){
   return payload.Message || {}
 }
 
+
+function handleNotification(req, res) {
+  try {
+    var { ship, organization, secret } = req.query;
+
+    if(!ship || !organization){
+      console.log('Message lacks Organization and Ship');
+      return false;
+    }
+
+    getCachedShip(ship, organization, secret).then(function(ship) {
+      SNSClient({ verify: false }, process.bind(null, ship))(req, res);
+    });
+  } catch (err) {
+    console.warn("Handling error", err);
+  }
+}
 
 export default function bootstrap(app, config, processors){
   app.get('/install', install(config));
@@ -31,20 +49,7 @@ export default function bootstrap(app, config, processors){
 
   app.get('/readme', showReadme);
 
-  app.post('/notify', function(req, res){
-
-    var { ship, organization } = req.query;
-
-    if(!ship || !organization){
-      console.log('Message lacks Organization and Ship');
-      return false;
-    }
-
-    getCachedShip(ship, organization, config.globalSecret).then(function(ship){
-      SNSClient({ verify: false }, process.bind(null, ship))(req, res);
-    });
-
-  });
+  app.post('/notify', handleNotification);
 
   app.get('/manifest.json', function(req, res){
     res.sendFile(path.resolve(__dirname, '..', 'manifest.json'));

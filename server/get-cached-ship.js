@@ -10,14 +10,14 @@ function cache(id, client){
 }
 
 export default function getCachedShip(id, organization, secret){
-  console.log('GetCached', secret)
   return new Promise(function(resolve, reject){
     const ship = cache(id);
     if(ship) { return resolve(ship); }
-
-    getHullClient(organization, id, generateShipSecret(id, secret))
-    .get(id).then( (ship)=>{
+    getHullClient(organization, id, secret)
+    .get(id).then( (ship)=> {
       resolve(cache(id, ship));
+    }, (err) => {
+      reject(err);
     });
   });
 }
