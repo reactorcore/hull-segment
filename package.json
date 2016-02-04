@@ -25,7 +25,6 @@
     "start": "./bin/start",
     "lint": "eslint src",
     "build": "rimraf dist && NODE_ENV=production webpack --config ./webpack.config.js --progress --profile --colors",
-    "sync": "./bin/sync",
     "postinstall": "npm run build"
   },
   "keywords": [
@@ -35,7 +34,6 @@
   ],
   "dependencies": {
     "analytics-node": "^2.0.1",
-    "aws-snsclient": "^0.2.0",
     "babel": "^5.8.23",
     "babel-loader": "^5.3.2",
     "body-parser": "^1.14.1",
@@ -43,7 +41,7 @@
     "core-js": "^1.2.5",
     "ejs": "^2.3.4",
     "express": "^4.13.3",
-    "hull": "^0.5.1",
+    "hull": "^0.5.3",
     "json-loader": "^0.5.3",
     "minimist": "^1.2.0",
     "rimraf": "^2.4.3",

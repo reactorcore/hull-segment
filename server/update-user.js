@@ -9,18 +9,14 @@ const getKey = function getKey(arr, k){
   }, []);
 }
 
-export default function(ship={}, messageString){
-  try{
-    var message = JSON.parse(messageString);
-  } catch(e){
-    console.log('Error parsing', user)
-    throw new Error('Invalid Message', message);
+export default function({ message }, { ship }){
+  const { user, segments } = message;
+
+  if (!user || !user.id) {
+    return false;
   }
-  const { user, segments } = (message||{});
 
-  if(!user || !user.id){ return false; }
-
-  if(!ship || !ship.settings){
+  if (!ship || !ship.settings){
     return false;
   }
 
@@ -32,17 +28,15 @@ export default function(ship={}, messageString){
     segment_ids: getKey(segments, 'id')
   }
 
-  try {
-    analytics.identify({
-      userId: user.id,
-      traits: traits
-      // , timestamp: user.last_seen_at
-    });
+  analytics.identify({
+    userId: user.id,
+    traits: traits
+  });
 
-    // Is it interesting to also save a "User Updated" event so we can message Zapier? Let's try it
-    analytics.track({userId: user.id, event: 'User Updated', properties: traits});
-  } catch(e){
-    console.log("error while sending to analytics", e)
-  }
-  return true;
+  // Is it interesting to also save a "User Updated" event so we can message Zapier? Let's try it
+  analytics.track({
+    event: 'User Updated',
+    userId: user.id,
+    properties: traits
+  });
 }
