@@ -16,8 +16,9 @@ export default function({ message }, { ship }){
     return false;
   }
 
-  if (!ship || !ship.settings){
-    return false;
+  if (!ship || !ship.settings || !ship.settings.write_keys) {
+    console.warn('Missing credentials for ship', (ship || {}).id);
+    return Promise.reject(new Error("Missing credentials"));
   }
 
   var analytics = new Analytics(ship.settings.write_key);
@@ -39,4 +40,5 @@ export default function({ message }, { ship }){
     userId: user.id,
     properties: traits
   });
+
 }
