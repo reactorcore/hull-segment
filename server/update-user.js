@@ -29,16 +29,22 @@ export default function({ message }, { ship }){
     segment_ids: getKey(segments, 'id')
   }
 
+  const context = {
+    active: false,
+    ip: 0
+  }
+
   analytics.identify({
     userId: user.id,
-    traits: traits
+    traits, context
   });
 
   // Is it interesting to also save a "User Updated" event so we can message Zapier? Let's try it
   analytics.track({
     event: 'User Updated',
     userId: user.id,
-    properties: traits
+    properties: traits,
+    context
   });
 
 }
