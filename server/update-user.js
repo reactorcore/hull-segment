@@ -1,6 +1,31 @@
 import _ from 'lodash';
 import Analytics from 'analytics-node';
 
+
+function camelize(str) {
+  return str.replace (/(?:^|[-_])(\w)/g, function (_, c, i) {
+    var s = i == 0 ? c : c.toUpperCase();
+    return c ? s : '';
+  });
+};
+
+const TOP_LEVEL_FIELDS = [
+  'name',
+  'username',
+  'first_name',
+  'last_name',
+  'phone',
+  'description'
+];
+
+const ADDRESS_FIELDS = [
+  'street',
+  'city',
+  'postal_code',
+  'state',
+  'country'
+];
+
 const getKey = function getKey(arr, k){
   if(!arr || !arr.length){ return []}
   return _.reduce(arr, function(m, s){
@@ -23,28 +48,34 @@ export default function({ message }, { ship }){
 
   var analytics = new Analytics(ship.settings.write_key);
 
-  const traits = {
-    ...user,
-    segments: getKey(segments, 'name'),
-    segment_ids: getKey(segments, 'id')
-  }
+  const traits = _.reduce(user, (t, v, k) => {
+    if (_.include(TOP_LEVEL_FIELDS, k)) {
+      t[camelize(k)] = v;
+    } else if (/^traits_/.test(k)) {
+      t[k.replace(/^traits_/, '')] = v;
+    } else if (/^address_/.test(k) && v && v.length > 0) {
+      t.address = t.address || {};
+      t.address[camelize(k.replace(/^address_/, ''))] = v;
+    }
+    return t;
+  }, {
+    avatar: user.picture,
+    email: user.contact_email || user.email,
+    hull_segments: getKey(segments, 'name').join(",")
+  });
 
   const context = {
     active: false,
-    ip: 0
+    ip: 0,
+    integrations: {
+      Hull: false
+    }
   }
 
+  const userId = user.external_id || user.id;
+
   analytics.identify({
-    userId: user.id,
+    userId: userId,
     traits, context
   });
-
-  // Is it interesting to also save a "User Updated" event so we can message Zapier? Let's try it
-  analytics.track({
-    event: 'User Updated',
-    userId: user.id,
-    properties: traits,
-    context
-  });
-
 }
