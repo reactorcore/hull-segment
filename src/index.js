@@ -11,10 +11,16 @@ function start(element, deployment, hull) {
   }
 
   function identify(me) {
-    if (window.analytics){
+    if (window.analytics) {
+      try {
+        const anonymousId = hull.config('anonymousId') || hull.config('browserId');
+        if (anonymousId) {
+          window.analytics.user().anonymousId(anonymousId);
+        }
+      } catch(err) {}
       if (me) {
-        const services = Hull.config().services.analytics || {};
-        const user = { id: me.id, name: me.name, email: me.email, username: me.username};
+        const services = Hull.config('services.analytics') || {};
+        const user = { id: me.id, name: me.name, email: me.email, username: me.username };
         const options = {};
         if (services && services.intercom && services.intercom.credentials) {
           options.integrations = { Intercom: { user_hash: services.intercom.credentials.user_hash } };
@@ -34,7 +40,7 @@ function start(element, deployment, hull) {
     }
   }
 
-  function traits(payload){
+  function traits(payload) {
     if (window.analytics && payload) {
       window.analytics.identify(camelize(payload));
     }
