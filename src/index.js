@@ -5,6 +5,22 @@ const camelize = require('camelize');
 segment();
 
 function start(element, deployment, hull) {
+
+  function getOptions() {
+
+    const services = Hull.config('services.analytics') || {};
+    const options = {
+      anonymousId: hull.config('anonymousId') || hull.config('browserId'),
+      integrations: { Hull: false }
+    };
+
+    if (services && services.intercom && services.intercom.credentials) {
+      options.integrations = { Intercom: { user_hash: services.intercom.credentials.user_hash } };
+    }
+
+    return options;
+  }
+
   if (window.analytics) {
     window.analytics.load(deployment.ship.settings.write_key);
     window.analytics.page();
@@ -12,37 +28,29 @@ function start(element, deployment, hull) {
 
   function identify(me) {
     if (window.analytics) {
-      try {
-        const anonymousId = hull.config('anonymousId') || hull.config('browserId');
-        if (anonymousId) {
-          window.analytics.user().anonymousId(anonymousId);
-        }
-      } catch(err) {}
-      if (me) {
-        const services = Hull.config('services.analytics') || {};
-        const user = { id: me.id, name: me.name, email: me.email, username: me.username };
-        const options = {};
-        if (services && services.intercom && services.intercom.credentials) {
-          options.integrations = { Intercom: { user_hash: services.intercom.credentials.user_hash } };
-        }
-        window.analytics.identify(user.id, user, options);
+      if (me && me.id) {
+        const user = ['name', 'email', 'username'].reduce((u, k) => {
+          if (me[k] != null) {
+            u[k] = me[k];
+          }
+          return u;
+        }, {});
+        window.analytics.identify(me.id, user, getOptions());
       } else {
-        if (window.analytics.reset){
-          window.analytics.reset();
-        }
+        window.analytics.reset();
       }
     }
   }
 
   function track(payload) {
     if (window.analytics && payload) {
-      window.analytics.track(payload.event, payload.params);
+      window.analytics.track(payload.event, payload.params, getOptions());
     }
   }
 
   function traits(payload) {
     if (window.analytics && payload) {
-      window.analytics.identify(camelize(payload));
+      window.analytics.identify(camelize(payload), getOptions());
     }
   }
 
