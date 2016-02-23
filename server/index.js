@@ -58,6 +58,15 @@ const segmentHandler = SegmentHandler({
   },
 
   events: {
+
+    page(evt) {
+      // console.warn('Boom, page !', evt)
+    },
+
+    alias(evt, { ship, hull }) {
+      // console.warn('Boom, alias !', evt)
+    },
+
     track(track, { ship, hull }) {
       const { integrations, context, anonymousId, event, properties, userId, originalTimestamp, messageId } = track;
       const page = (context || {}).page || {};
@@ -80,7 +89,7 @@ const segmentHandler = SegmentHandler({
         created_at: originalTimestamp
       };
 
-      return hull.as(userId).post('t', payload);
+      return hull.as({ external_id: userId }).post('t', payload);
     },
 
     identify({ context, traits, userId }, { ship, hull }) {
