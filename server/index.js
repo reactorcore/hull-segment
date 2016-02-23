@@ -49,7 +49,6 @@ function updateUser(hull, user, asUser) {
   })
 }
 
-
 const segmentHandler = SegmentHandler({
 
   sharedSecret: process.env.SECRET,
@@ -59,9 +58,31 @@ const segmentHandler = SegmentHandler({
   },
 
   events: {
-    track() {
-      // console.warn("Boom , track!", arguments);
+    track(track, { ship, hull }) {
+      const { integrations, context, anonymousId, event, properties, userId, originalTimestamp, messageId } = track;
+      const page = (context || {}).page || {};
+
+      // Do not resend data to Hull
+      if (integrations && integrations.Hull === false) {
+        return false;
+      }
+
+      const payload = {
+        ip: context.ip,
+        _bid: anonymousId,
+        _sid: [anonymousId, originalTimestamp.substring(0,10)].join('-'),
+        event: event,
+        source: 'Segment Ship',
+        properties: properties || {},
+        url: page.url,
+        useragent: context.userAgent,
+        referrer: page.referrer,
+        created_at: originalTimestamp
+      };
+
+      return hull.as(userId).post('t', payload);
     },
+
     identify({ context, traits, userId }, { ship, hull }) {
 
       const integrations = (context || {}).integrations || {};
