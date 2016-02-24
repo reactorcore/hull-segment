@@ -85,7 +85,11 @@ const segmentHandler = SegmentHandler({
       }
 
       const aId = anonymousId || userId;
-      const sId = (originalTimestamp || new Date().toISOString()).substring(0,10);
+      let sId = (originalTimestamp || new Date().toISOString()).substring(0,10);
+
+      if (aId) {
+        sId = [aid, sId].join('-');
+      }
 
       if (process.env.DEBUG && !originalTimestamp) {
         console.warn(track);
