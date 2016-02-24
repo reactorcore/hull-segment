@@ -81,7 +81,7 @@ const segmentHandler = SegmentHandler({
         _bid: anonymousId,
         _sid: [anonymousId, originalTimestamp.substring(0,10)].join('-'),
         event: event,
-        source: 'Segment Ship',
+        source: 'segment',
         properties: properties || {},
         url: page.url,
         useragent: context.userAgent,
