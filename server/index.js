@@ -88,7 +88,7 @@ const segmentHandler = SegmentHandler({
       let sId = (originalTimestamp || new Date().toISOString()).substring(0,10);
 
       if (aId) {
-        sId = [aid, sId].join('-');
+        sId = [aId, sId].join('-');
       }
 
       if (process.env.DEBUG && !originalTimestamp) {
