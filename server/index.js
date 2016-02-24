@@ -15,8 +15,16 @@ const TOP_LEVEL_FIELDS = [
   'image',
   'picture',
   'phone',
-  'address'
+  'address',
+  'created_at'
 ];
+
+
+const ALIASED_FIELDS = {
+  lastname: 'last_name',
+  firstname: 'first_name',
+  createdat: 'created_at'
+};
 
 const IGNORED_TRAITS = [
   'id',
@@ -107,6 +115,8 @@ const segmentHandler = SegmentHandler({
         if (v == null) return u;
         if (_.include(TOP_LEVEL_FIELDS, k)) {
           u.properties[k] = v;
+        } else if (ALIASED_FIELDS[k.toLowerCase()]) {
+          u.properties[ALIASED_FIELDS[k.toLowerCase()]] = v;
         } else if (!_.include(IGNORED_TRAITS, k)) {
           u.traits[k] = v;
         }
