@@ -58,11 +58,13 @@ export default function({ message }, { ship }){
       t.address[camelize(k.replace(/^address_/, ''))] = v;
     }
     return t;
-  }, {
-    avatar: user.picture,
-    email: user.contact_email || user.email,
-    hull_segments: getKey(segments, 'name').join(",")
-  });
+  }, {});
+
+  if (user.contact_email && user.contact_email.length > 4) {
+    traits.email = user.contact_email;
+  }
+
+  traits.hull_segments = getKey(segments, 'name').join(",");
 
   const context = {
     active: false,
@@ -73,7 +75,6 @@ export default function({ message }, { ship }){
   }
 
   const userId = user.external_id || user.id;
-
 
   analytics.identify({
     userId: userId,
