@@ -91,10 +91,6 @@ const segmentHandler = SegmentHandler({
         sId = [aId, sId].join('-');
       }
 
-      if (process.env.DEBUG && !originalTimestamp) {
-        console.warn(track);
-      }
-
       const payload = {
         ip: context.ip || '0',
         _bid: aId,
