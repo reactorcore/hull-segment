@@ -74,8 +74,14 @@ export default function({ message }, { ship }){
 
   const userId = user.external_id || user.id;
 
+
   analytics.identify({
     userId: userId,
     traits, context
   });
+
+  if (process.env.DEBUG) {
+    console.log('user', userId, traits);
+  }
+
 }

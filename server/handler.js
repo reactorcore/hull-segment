@@ -113,7 +113,7 @@ function processHandlers(handlers) {
         Promise.all(processors).then(() => {
           next();
         }, (err) => {
-          res.handleError('Failed to process message: ' + err.toString(), 500);
+          res.handleError('Failed to process message: ' + JSON.stringify(err, ' ', 2), 500);
         });
       } else {
         next();
