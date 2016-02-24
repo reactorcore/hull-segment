@@ -76,10 +76,12 @@ const segmentHandler = SegmentHandler({
         return false;
       }
 
+      const aId = anonymousId || userId;
+
       const payload = {
         ip: context.ip,
-        _bid: anonymousId,
-        _sid: [anonymousId, originalTimestamp.substring(0,10)].join('-'),
+        _bid: aId,
+        _sid: [aId, originalTimestamp.substring(0,10)].join('-'),
         event: event,
         source: 'segment',
         properties: properties || {},
