@@ -85,11 +85,16 @@ const segmentHandler = SegmentHandler({
       }
 
       const aId = anonymousId || userId;
+      const sId = (originalTimestamp || new Date().toISOString()).substring(0,10);
+
+      if (process.env.DEBUG && !originalTimestamp) {
+        console.warn(track);
+      }
 
       const payload = {
         ip: context.ip || '0',
         _bid: aId,
-        _sid: [aId, originalTimestamp.substring(0,10)].join('-'),
+        _sid: sId,
         event: event,
         source: 'segment',
         properties: properties || {},
