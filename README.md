@@ -26,19 +26,3 @@ npm install -g gulp
 npm install
 gulp
 ```
-
-# Secret Exchange:
-
-Go to your console in the Hull Dashboard and type:
-
-```
-Hull.api({
-  path: 'SHIP_ID/secret',
-  provider:'admin',
-  organization:'ORG_NAMESPACE'
-})
-```
-
-Get the secret, paste in there:
-
-`http://hull-segment.herokuapp.com/install?org=a239c5b2.hullbeta.io&id=SHIP_ID&secret=SHIP_SECRET`
