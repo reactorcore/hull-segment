@@ -46,22 +46,28 @@ function updateTraits(hull, userId, traits) {
 
 function updateUser(hull, user) {
 
-  const { userId, anonymousId, properties, traits } = user;
-  let client = hull;
+  try {
+    const { userId, anonymousId, properties, traits } = user;
+    let client = hull;
 
-  if (userId) {
-    let hullAs = { external_id: userId };
-    if (anonymousId) {
-      hullAs.guest_id = anonymousId;
+    if (userId) {
+      let hullAs = { external_id: userId };
+      if (anonymousId) {
+        hullAs.guest_id = anonymousId;
+      }
+      client = hull.as(hullAs);
+    } else if (anonymousId) {
+      properties._bid = anonymousId;
     }
-    client = hull.as(hullAs);
-  } else if (anonymousId) {
-    properties._bid = anonymousId;
-  }
 
-  return client.put('me', properties).then((hullUser) => {
-    return updateTraits(hull, hullUser.id, traits);
-  });
+    return client.put('me', properties).then((hullUser) => {
+      return updateTraits(hull, hullUser.id, traits);
+    }, (err) => {
+      console.warn('Error ', err, err.stack);
+    });
+  } catch (err) {
+    console.warn('Error on updateUser', err, err.stack);
+  }
 
 }
 
