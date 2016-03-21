@@ -19,7 +19,6 @@ const TOP_LEVEL_FIELDS = [
   'created_at'
 ];
 
-
 const ALIASED_FIELDS = {
   lastname: 'last_name',
   firstname: 'first_name',
@@ -42,19 +41,28 @@ const notifHandler = NotifHandler({
 });
 
 function updateTraits(hull, userId, traits) {
-  return hull.as(userId).traits(traits);
+  return hull.as(userId, false).traits(traits);
 }
 
-function updateUser(hull, user, asUser) {
-  return hull.as(asUser).put('me', user.properties).then((hullUser) => {
-    return updateTraits(hull, hullUser.id, user.traits);
-  }, (err)=> {
-    if (/[a-z0-9]{24}/i.test(asUser.external_id)) {
-      return updateUser(hull, user, asUser.external_id);
-    } else {
-      throw err;
+function updateUser(hull, user) {
+
+  const { userId, anonymousId, properties, traits } = user;
+  let client = hull;
+
+  if (userId) {
+    let hullAs = { external_id: userId };
+    if (anonymousId) {
+      hullAs.guest_id = anonymousId;
     }
-  })
+    client = hull.as(hullAs);
+  } else if (anonymousId) {
+    properties._bid = anonymousId;
+  }
+
+  return client.put('me', properties).then((hullUser) => {
+    return updateTraits(hull, hullUser.id, traits);
+  });
+
 }
 
 const segmentHandler = SegmentHandler({
@@ -67,9 +75,7 @@ const segmentHandler = SegmentHandler({
 
   events: {
 
-    page(evt) {
-      // console.warn('Boom, page !', evt)
-    },
+    page(evt) {},
 
     alias(evt, { ship, hull }) {
       // console.warn('Boom, alias !', evt)
@@ -104,10 +110,13 @@ const segmentHandler = SegmentHandler({
         created_at: originalTimestamp
       };
 
-      return hull.as({ external_id: userId }).post('t', payload);
+      const client = userId ? hull.as({ external_id: userId }) : hull;
+
+      return client.post('t', payload);
     },
 
-    identify({ context, traits, userId }, { ship, hull }) {
+    identify(payload, { ship, hull }) {
+      const { context, traits, userId, anonymousId } = payload;
 
       const integrations = (context || {}).integrations || {};
 
@@ -126,10 +135,10 @@ const segmentHandler = SegmentHandler({
           u.traits[k] = v;
         }
         return u;
-      }, { properties: {}, traits: {} });
+      }, { userId, anonymousId, properties: {}, traits: {} });
 
-      if (userId) {
-        return updateUser(hull, user, { external_id: userId });
+      if (!_.isEmpty(user.traits) || !_.isEmpty(user.properties)) {
+        return updateUser(hull, user);
       }
     }
   }
