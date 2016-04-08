@@ -80,9 +80,4 @@ export default function({ message }, { ship }){
     userId: userId,
     traits, context
   });
-
-  if (process.env.DEBUG) {
-    console.log('user', userId, traits);
-  }
-
 }
