@@ -41,6 +41,7 @@ function updateUser(hull, traits, user) {
 
 export default function group(event, { hull, ship }) {
   const { handle_groups } = ship.settings || {};
+  console.warn('group', { handle_groups, event });
   if (handle_groups === true) {
     const { userId, groupId, traits } = event;
     const doUpdate = updateUser.bind(null, hull, { ...traits, id: groupId });
