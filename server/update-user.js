@@ -51,7 +51,7 @@ export default function({ message }, { ship }){
   const traits = _.reduce(user, (t, v, k) => {
     if (_.include(TOP_LEVEL_FIELDS, k)) {
       t[camelize(k)] = v;
-    } else if (/^traits_/.test(k)) {
+    } else if (/^traits_/.test(k) && !/^traits_group__/.test(k)) {
       t[k.replace(/^traits_/, '')] = v;
     } else if (/^address_/.test(k) && v && v.length > 0) {
       t.address = t.address || {};
