@@ -27,6 +27,14 @@
       "description":"Segment Write Key, found in Project Settings > Keys",
       "type": "string",
       "format": "text"
+    },
+    {
+      "name" : "handle_groups",
+      "title" : "Handle Groups",
+      "description" : "Applies group attributes to as user traits, prefixed with group__",
+      "type" : "boolean",
+      "default" : false,
+      "format" : "hidden"
     }
   ],
   "resources": [],

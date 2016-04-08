@@ -108,6 +108,12 @@ function processHandlers(handlers) {
           ship: req.hull.ship
         };
 
+        const { message } = req.hull;
+        if (message && message.integrations && message.integrations.Hull === false) {
+          console.warn('Hull integration ignored for ', message);
+          return next();
+        }
+
         const processors = eventHandlers.map(fn => fn(req.hull.message, context));
 
         Promise.all(processors).then(() => {
