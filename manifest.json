@@ -5,6 +5,7 @@
   "ui": false,
   "admin" : "admin.html",
   "readme" : "readme.md",
+  "tags": ["client", "incoming", "outgoing"],
   "version": "0.0.1",
   "deployment_settings":[
     {
@@ -18,6 +19,14 @@
       "default"    : "append",
       "type"       : "string",
       "format"     : "string"
+    }
+  ],
+  "private_settings": [
+    {
+      "name": "information",
+      "headerTemplate": "Copy the following URL and paste it in the Webhooks integration in Segment.com:\n`{{source_url}}segment?organization={{orgDomain}}&secret={{secret}}&ship={{id}}`",
+      "type": "string",
+      "format": "information"
     }
   ],
   "settings": [
