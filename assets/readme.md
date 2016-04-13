@@ -6,7 +6,7 @@ Hull supports the `identify`, `track`, and `group` methods.
 
 ### Identify
 
-Every user identified on Segment will be created as a User on Hull.
+Every user identified on Segment with a `userId` will be created as a User on Hull.
 
 Segment's `userId` will be mapped to Hull's `external_id` field.
 

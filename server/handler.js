@@ -6,6 +6,13 @@ import crypto from 'crypto'
 import basicAuth from 'basic-auth-connect'
 import jwt from 'jwt-simple'
 
+function camelize(str, decapitalize) {
+  var ret = str.replace(/[-_\s]+(.)?/g, function(match, c) {
+    return c ? c.toUpperCase() : '';
+  });
+  return ret.charAt(0).toLowerCase() + ret.slice(1)
+};
+
 function parseRequest() {
   return function(req, res, next) {
     req.hull = req.hull || {};
@@ -29,9 +36,10 @@ function verifyAuthToken(options) {
   return (req, res, next) => {
     req.hull = req.hull || {};
     if (req.headers['authorization'] && secret) {
-      const [ authType, token ] = req.headers['authorization'].split(' ');
-      if (authType === 'Basic' && token) {
+      const [ authType, token64 ] = req.headers['authorization'].split(' ');
+      if (authType === 'Basic' && token64) {
         try {
+          const token = new Buffer(token64, 'base64').toString().split(":")[0]
           req.hull.config = jwt.decode(token, secret);
           next();
         } catch (err) {
@@ -135,9 +143,14 @@ function processHandlers(handlers) {
         const { message } = req.hull;
         if (message && message.integrations && message.integrations.Hull === false) {
           return next();
+        } else {
+          Object.keys(message).map(k => {
+            const camelK = camelize(k);
+            message[camelK] = message[camelK] || message[k];
+          })
         }
 
-        const processors = eventHandlers.map(fn => fn(req.hull.message, context));
+        const processors = eventHandlers.map(fn => fn(message, context));
 
         Promise.all(processors).then((results) => {
           next();
