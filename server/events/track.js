@@ -35,8 +35,5 @@ export default function handleTrack(track, { hull, ship }) {
   }, {});
 
   const client = userId ? hull.as({ external_id: userId }) : hull;
-
-  console.warn('track !', payload)
-
   return client.post('t', payload);
 }
