@@ -3,7 +3,7 @@
   "description": "Install Segment in your site",
   "picture": "picture.png",
   "ui": false,
-  "index": "ship.js",
+  "admin" : "admin.html",
   "readme" : "readme.md",
   "version": "0.0.1",
   "deployment_settings":[

@@ -1,0 +1,49 @@
+<html>
+  <head>
+    <title>Hull Segment</title>
+    <link rel="stylesheet" href="//dd04rofzygnm0.cloudfront.net/releases/master/865f04865d2448286626bac92c518a8f8ea8bafe/stylesheets/neue.css" />
+  </head>
+  <body class='container'>
+    <div class=" mt-1 col-md-6 col-md-offset-3">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h4 class="panel-title">Segment -> Hull integration</h4>
+        </div>
+        <div class="panel-body">
+          <p>Enable the Hull Integration in your Segment Source.</p>
+          <label for="apiKey">
+            Here is your apiKey
+          </label>
+          <div class="input-group">
+            <input id="apiKey" type="text" class="form-control" value="<%= apiKey %>">
+            <span class="input-group-addon">
+              <a id='copy' class="btn" type="button" data-clipboard-demo="" data-clipboard-target="#apiKey">
+                <img class="clippy" src="/clippy.svg" width="13" alt="Copy to clipboard">
+              </a>
+            </span>
+          </div>
+        </div>
+      </div>
+      <p>
+        Or click here to enable it directly &nbsp;
+        <span id="segment-enable-button" target='segment'></span>
+      </p>
+
+    </div>
+
+
+
+    <script src="//static.segment.com/enable-button/v1/index.js"></script>
+    <script src="/clipboard.min.js"></script>
+    <script>
+      var clipboard = new Clipboard('#copy');
+      var btn = new segment.EnableButton({
+        element: '#segment-enable-button',
+        integration: 'hull',
+        size: 'large',
+        settings: { apiKey: "<%= apiKey %>" }
+      });
+      btn.element.setAttribute('target', '_blank');
+    </script>
+  </body>
+</html>

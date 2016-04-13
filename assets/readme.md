@@ -1,16 +1,65 @@
-This ship sends Hull data to Segment.
+## Getting Started
 
-# Client-Side
+Once you’ve installed the Segment ship on your organization, turn on Hull from the Segment integrations page. Get your API Key from ship's settings page on Hull and add it to segment.
 
-Sends `Hull.track()`, `Hull.trait()` to Segment and performs `analytics.identify` for you. If you use Hull to handle your user identities, everything is automatic. Login, Logout, Signup events will be tracked properly.
+Hull supports the `identify`, `track`, and `group` methods.
 
-# Server-Side
+### Identify
 
-Sends Hull User Updates and Segment changes to __Segment.com__. Whenever a user changes, or enters or leaves a Hull Segment, it will send the updated User profile to Segment. The new profile will contain an updated list of segments which the user belongs to.
+Every user identified on Segment will be created as a User on Hull.
 
-It will also trigger a "User Updated" event containing the same data for use in your other tools.
+Segment's `userId` will be mapped to Hull's `external_id` field.
 
-# Setup
+#### First level user attributes
 
-- Go to your Segment dashboard. Click `Setup > Install a library`
-- In the __Browser__ tab, select the write key, and paste it in the Hull Dashboard
+The following traits will be stored as first level fields on the User object
+
+- address
+- contact_email
+- created_at
+- description
+- email
+- first_name
+- image
+- last_name
+- name
+- phone
+- picture
+- username
+
+#### Custom traits
+
+All other traits from the `identify` call will be stored as [custom traits](http://www.hull.io/docs/references/hull_js/#traits) on Hull.
+
+### Group
+
+Each group call in Segment will apply the group's traits as traits on the users that belong to the group. Those group traits are prefixed with `group__`
+
+For example:
+
+      identify.group('123', { name: 'Wonderful', city: 'Paris' });
+
+will add the following traits on all users that belong to the group :
+
+      {
+        group__id: '123',
+        group__name: 'Wonderful',
+        group__city: 'Paris'
+      }
+
+__Note: This feature is optional and not enabled by default. You should only be enabled if your users can only belong to one group.__
+
+### Track
+
+Every `track` in Segment will create a new Event on Hull.
+
+
+## Publishing data back to Segment
+
+When a user enters or leaves a Hull segment, this ship send a new `identify` call with the following traits :
+
+    analytics.identify(userId, {
+      hull_segments: #all matching segment names joined by a ','#
+    })
+
+
