@@ -1,6 +1,11 @@
 #!/usr/bin/env node
 require("babel/register");
+const app = require('../server');
+const PORT = process.env.PORT || 8082;
+const options = {
+  secret: process.env.SECRET,
+  devMode: process.env.NODE_ENV == 'development'
+}
 
-var PORT = process.env.PORT || 8082;
 console.log('Listening on port ' + PORT);
-require('../server')(PORT);
+app(options).listen(PORT);

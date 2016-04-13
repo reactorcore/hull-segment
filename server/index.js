@@ -5,11 +5,11 @@ import devMode from './dev-mode';
 import SegmentHandler from './handler';
 import eventsHandlers from './events'
 
-export default function(port) {
+export default function(options) {
 
   const app = express();
 
-  if (process.env.NODE_ENV !== 'production') {
+  if (options.devMode) {
     app.use(devMode());
   }
 
@@ -34,15 +34,12 @@ export default function(port) {
   }));
 
   app.post('/segment', SegmentHandler({
-    sharedSecret: process.env.SECRET,
+    secret: options.secret,
     events: eventsHandlers,
     onError(err) {
       console.warn("Error handling segment event", err, err.stack);
     }
   }));
 
-  app.listen(port);
-
   return app;
-
 }
