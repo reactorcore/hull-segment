@@ -7,8 +7,6 @@ export default function handleTrack(track, { hull, ship }) {
 
   const created_at = originalTimestamp || sentAt || receivedAt;
 
-  console.warn('raw track', track)
-
   const aId = anonymousId || userId;
   let sId = (created_at || new Date().toISOString()).substring(0,10);
 
