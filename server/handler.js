@@ -155,7 +155,7 @@ function processHandlers(handlers) {
         Promise.all(processors).then((results) => {
           next();
         }, (err) => {
-          res.handleError('Failed to process message: ' + JSON.stringify(err, ' ', 2), 500);
+          res.handleError(err.message, err.status || 500);
         });
       } else {
         res.handleError('Not supported', 501);

@@ -32,7 +32,6 @@ function updateTraits(hull, userId, traits) {
 }
 
 function updateUser(hull, user) {
-
   try {
     const { userId, anonymousId, properties, traits } = user;
     let client = hull;
@@ -49,13 +48,10 @@ function updateUser(hull, user) {
 
     return client.put('me', properties).then((hullUser) => {
       return updateTraits(hull, hullUser.id, traits);
-    }, (err) => {
-      console.warn('Error ', err, err.stack);
     });
   } catch (err) {
-    console.warn('Error on updateUser', err, err.stack);
+    return Promise.reject(err);
   }
-
 }
 
 export default function handleIdentify(payload, { hull }) {
