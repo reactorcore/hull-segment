@@ -34,6 +34,7 @@ export default function(options) {
   }));
 
   app.post('/segment', SegmentHandler({
+    Hull: options.Hull,
     secret: options.secret,
     events: eventsHandlers,
     onError(err) {

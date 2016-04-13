@@ -25,7 +25,8 @@
     "start": "./bin/start",
     "lint": "eslint src",
     "build": "rimraf dist && NODE_ENV=production webpack --config ./webpack.config.js --progress --profile --colors",
-    "postinstall": "npm run build"
+    "postinstall": "npm run build",
+    "test": "NODE_ENV=test mocha -R spec ./tests"
   },
   "keywords": [
     "hull",
@@ -45,11 +46,17 @@
     "express": "^4.13.3",
     "hull": "0.6.1",
     "json-loader": "^0.5.3",
+    "jwt-simple": "^0.5.0",
     "lodash": "^3.10.1",
     "minimist": "^1.2.0",
     "raw-body": "^2.1.5",
     "rimraf": "^2.4.3",
     "webpack": "^1.12.2",
     "webpack-dev-middleware": "^1.2.0"
+  },
+  "devDependencies": {
+    "sinon": "^1.17.3",
+    "mocha": "^2.4.5",
+    "supertest": "^1.2.0"
   }
 }

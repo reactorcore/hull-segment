@@ -1,8 +1,10 @@
 #!/usr/bin/env node
 require("babel/register");
+const Hull = require('hull');
 const app = require('../server');
 const PORT = process.env.PORT || 8082;
 const options = {
+  Hull,
   secret: process.env.SECRET,
   devMode: process.env.NODE_ENV == 'development'
 }

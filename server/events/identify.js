@@ -2,6 +2,7 @@ import { isEmpty, reduce, include } from 'lodash'
 
 const TOP_LEVEL_FIELDS = [
   'name',
+  'description',
   'username',
   'first_name',
   'last_name',
