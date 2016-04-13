@@ -63,8 +63,7 @@ function verifySignature(options = {}) {
       if (signature == digest) {
         next();
       } else {
-        res.handleError('Invalid signature', 401);
-        next();
+        return res.handleError('Invalid signature', 401);
       }
     } else {
       return next();
