@@ -7,13 +7,7 @@ function searchUsers(userId, groupId, hull) {
       filtered: {
         query: { match_all: {} },
         filter: {
-          or: {
-            filters: [
-              { terms: { traits_group__id: [groupId] } },
-              { terms: { id: [userId] } },
-              { terms: { external_id: [userId] } }
-            ]
-          }
+          terms: { traits_group__id: [groupId] }
         }
       }
     },
@@ -26,7 +20,8 @@ function searchUsers(userId, groupId, hull) {
 
 function updateUser(hull, traits, user) {
   const diff = reduce(traits, (t, v, k) => {
-    if (v !== user[`traits_group__${k}`]) {
+    // drop nested properties
+    if (v !== user[`traits_group__${k}`] && typeof(v) !== 'object') {
       t[`group__${k}`] = v;
     }
     return t;
@@ -43,7 +38,12 @@ export default function group(event, { hull, ship }) {
     const { userId, groupId, traits } = event;
     const doUpdate = updateUser.bind(null, hull, { ...traits, id: groupId });
     return searchUsers(userId, groupId, hull).then((res) => {
-      return Promise.all(res.data.map(doUpdate));
+      const current_user = res.data.reduce((current, user) => {
+        return user.external_id == userId ? user : current;
+      }, { id: { external_id: userId } });
+      const other_group_users = res.data.filter(u => u.external_id !== userId);
+      const users = [current_user].concat(other_group_users);
+      return Promise.all(users.map(doUpdate));
     });
   }
 }
