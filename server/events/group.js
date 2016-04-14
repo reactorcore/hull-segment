@@ -27,6 +27,10 @@ function updateUser(hull, traits, user) {
     return t;
   }, {});
 
+  if (process.env.DEBUG) {
+    console.warn('[group]', { user, traits, diff });
+  }
+
   if (!isEmpty(diff)) {
     return hull.as(user.id).traits(diff);
   }

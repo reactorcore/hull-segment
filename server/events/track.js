@@ -33,5 +33,8 @@ export default function handleTrack(track, { hull, ship }) {
   }, {});
 
   const client = userId ? hull.as({ external_id: userId }) : hull;
+  if (process.env.DEBUG) {
+    console.warn('[track]', { userId, payload })
+  }
   return client.post('t', payload);
 }

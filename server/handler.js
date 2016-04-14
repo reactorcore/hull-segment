@@ -3,7 +3,6 @@ import https from 'https'
 import _ from 'lodash'
 import rawBody from 'raw-body'
 import crypto from 'crypto'
-import basicAuth from 'basic-auth-connect'
 import jwt from 'jwt-simple'
 
 function camelize(str, decapitalize) {

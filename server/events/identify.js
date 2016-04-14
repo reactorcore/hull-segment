@@ -46,6 +46,10 @@ function updateUser(hull, user) {
       properties._bid = anonymousId;
     }
 
+    if (process.env.DEBUG) {
+      console.warn('[identify]', { userId, anonymousId, properties, traits });
+    }
+
     return client.put('me', properties).then((hullUser) => {
       return updateTraits(hull, hullUser.id, traits);
     });
