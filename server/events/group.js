@@ -7,13 +7,13 @@ function searchUsers(userId, groupId, hull) {
       filtered: {
         query: { match_all: {} },
         filter: {
-          terms: { traits_group__id: [groupId] }
+          terms: { 'traits_group/id' : [groupId] }
         }
       }
     },
     raw: true,
     per_page: 250,
-    include: ["id", "email", "external_id", "created_at", "traits_group__*"]
+    include: ["id", "email", "external_id", "created_at", "traits_group/*"]
   };
   return hull.post('search/user_reports', params);
 }
@@ -21,8 +21,8 @@ function searchUsers(userId, groupId, hull) {
 function updateUser(hull, traits, user) {
   const diff = reduce(traits, (t, v, k) => {
     // drop nested properties
-    if (v !== user[`traits_group__${k}`] && typeof(v) !== 'object') {
-      t[`group__${k}`] = v;
+    if (v !== user[`traits_group/${k}`] && typeof(v) !== 'object') {
+      t[`group/${k}`] = v;
     }
     return t;
   }, {});
