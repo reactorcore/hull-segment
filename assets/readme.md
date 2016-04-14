@@ -60,7 +60,7 @@ __Note: This feature is optional and not enabled by default. You should only be 
 
 ## Publishing data back to Segment
 
-When a user enters or leaves a Hull segment, this ship send a new `identify` call with the following traits :
+If you enter your __Segment Write Key__ in the Ship's settings, then Hull will send customer data to Segment. When a user enters or leaves a Hull segment, a new `identify` call with be sent with the following traits :
 
     analytics.identify(userId, {
       hull_segments: #all matching segment names joined by a ','#
