@@ -31,9 +31,13 @@ The following traits will be stored as first level fields on the User object
 
 All other traits from the `identify` call will be stored as [custom traits](http://www.hull.io/docs/references/hull_js/#traits) on Hull.
 
+### Track
+
+Every `track` in Segment will create a new Event on Hull with `source:'segment'`.
+
 ### Group
 
-Each group call in Segment will apply the group's traits as traits on the users that belong to the group. Those group traits are prefixed with `group__`
+Each group call in Segment will apply the group's traits as traits on the users that belong to the group.
 
 For example:
 
@@ -42,16 +46,16 @@ For example:
 will add the following traits on all users that belong to the group :
 
       {
-        group__id: '123',
-        group__name: 'Wonderful',
-        group__city: 'Paris'
+        group: {
+          id: '123',
+          name: 'Wonderful',
+          city: 'Paris'
+        }
       }
 
+_Note: Internally, we flatten objects and use '/' as a separator, meaning they're really stored as `trait_group/name`. Our Libraries handle nesting for you when you receive data coming from Hull_
+
 __Note: This feature is optional and not enabled by default. You should only be enabled if your users can only belong to one group.__
-
-### Track
-
-Every `track` in Segment will create a new Event on Hull.
 
 
 ## Publishing data back to Segment
