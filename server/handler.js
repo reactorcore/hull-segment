@@ -200,7 +200,7 @@ module.exports = function SegmentHandler(options = {}) {
 
   app.use(errorHandler(options.onError));
   app.use(parseRequest());
-  app.use(verifySignature(options));
+  // app.use(verifySignature(options));
   app.use(verifyAuthToken(options));
   app.use(enrichWithHullClient(options.Hull));
   app.use(processHandlers(_handlers));
