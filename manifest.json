@@ -1,11 +1,11 @@
 {
   "name": "Segment",
-  "description": "Install Segment in your site",
+  "description": "Receive Events from Segment, send updated data to Segment",
+  "tags": ["incoming", "outgoing"],
   "picture": "picture.png",
   "ui": false,
   "admin" : "admin.html",
   "readme" : "readme.md",
-  "tags": ["client", "incoming", "outgoing"],
   "version": "0.0.1",
   "deployment_settings":[
     {
