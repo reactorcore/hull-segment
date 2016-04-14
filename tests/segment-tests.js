@@ -17,6 +17,9 @@ const Mocks = {
     this.post = ()=> {
       Promise.resolve({})
     }
+    this.as = () => {
+      return this;
+    }
   }
 }
 
@@ -64,7 +67,7 @@ describe('Segment Ship', () => {
   describe('With credentials - direct style', () => {
     it('should return 200 with a valid token', (done) => {
       const token = jwt.encode(config, secret);
-      sendRequest({ body: track, headers: { authorization: `Basic ${token}`  } })
+      sendRequest({ body: track, headers: { authorization: `Basic ${new Buffer(token).toString('base64')}`  } })
           .expect({ message: 'thanks' })
           .expect(200, done)
     });
@@ -78,7 +81,7 @@ describe('Segment Ship', () => {
 
     it('should return Missing credentials with a token with missing claims', (done) => {
       const token = jwt.encode({ organization: 'abc.boom', secret: 'shuuttt' }, secret);
-      sendRequest({ body: track, headers: { authorization: `Basic ${token}`  } })
+      sendRequest({ body: track, headers: { authorization: `Basic ${new Buffer(token).toString('base64')}`  } })
           .expect({ message: 'Missing credentials' })
           .expect(400, done)
     });
@@ -107,14 +110,15 @@ describe('Segment Ship', () => {
       const postSpy = sinon.spy();
       const MockHull = function() {
         this.get = (id) => Promise.resolve({ id })
+        this.as = () => this;
         this.post = (path, params) => {
           postSpy(path, params);
           return Promise.resolve();
         }
       }
       sendRequest({ body: track, query: config, Hull: MockHull })
-          .expect(200)
           .expect({ message: 'thanks' })
+          .expect(200)
           .end((err, res) => {
             assert(postSpy.withArgs('t').calledOnce)
             done()
@@ -125,8 +129,8 @@ describe('Segment Ship', () => {
       const putSpy = sinon.spy();
       const MockHull = function() {
         this.get = (id) => Promise.resolve({ id })
+        this.as = () => this;
         this.put = (path, params) => {
-          console.warn('put', { path, params })
           putSpy(path, params);
           return Promise.resolve({ id: 'user_id', ...params });
         }
