@@ -49,6 +49,7 @@
     "jwt-simple": "^0.5.0",
     "lodash": "^3.10.1",
     "minimist": "^1.2.0",
+    "newrelic": "^1.26.2",
     "raw-body": "^2.1.5",
     "rimraf": "^2.4.3",
     "webpack": "^1.12.2",
