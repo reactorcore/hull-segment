@@ -48,23 +48,9 @@ export default function({ message }, { ship }){
 
   var analytics = new Analytics(ship.settings.write_key);
 
-  const traits = _.reduce(user, (t, v, k) => {
-    if (_.include(TOP_LEVEL_FIELDS, k)) {
-      t[camelize(k)] = v;
-    } else if (/^traits_/.test(k) && !/^traits_group__/.test(k)) {
-      t[k.replace(/^traits_/, '')] = v;
-    } else if (/^address_/.test(k) && v && v.length > 0) {
-      t.address = t.address || {};
-      t.address[camelize(k.replace(/^address_/, ''))] = v;
-    }
-    return t;
-  }, {});
-
-  if (user.contact_email && user.contact_email.length > 4) {
-    traits.email = user.contact_email;
-  }
-
-  traits.hull_segments = getKey(segments, 'name').join(",");
+  const traits = {
+    hull_segments: getKey(segments, 'name').join(",")
+  };
 
   const context = {
     active: false,
@@ -76,8 +62,5 @@ export default function({ message }, { ship }){
 
   const userId = user.external_id || user.id;
 
-  analytics.identify({
-    userId: userId,
-    traits, context
-  });
+  analytics.identify({ userId, traits, context });
 }
