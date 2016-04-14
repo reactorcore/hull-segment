@@ -21,14 +21,6 @@
       "format"     : "string"
     }
   ],
-  "private_settings": [
-    {
-      "name": "information",
-      "headerTemplate": "Copy the following URL and paste it in the Webhooks integration in Segment.com:\n`{{source_url}}segment?organization={{orgDomain}}&secret={{secret}}&ship={{id}}`",
-      "type": "string",
-      "format": "information"
-    }
-  ],
   "settings": [
     {
       "name":"write_key",
