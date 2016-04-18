@@ -158,7 +158,6 @@ function processHandlers(handlers) {
         });
       } else {
         res.handleError('Not supported', 501);
-        next();
         console.warn('Method not supported ' + eventName);
       }
     } catch ( err ) {
