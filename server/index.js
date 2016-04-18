@@ -78,7 +78,7 @@ export default function(options) {
     secret: options.secret,
     events: eventsHandlers,
     onError(err) {
-      console.warn("Error handling segment event", err, err.stack);
+      console.warn("Error handling segment event", err, err && err.stack);
     }
   }));
 
