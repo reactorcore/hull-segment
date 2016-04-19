@@ -89,7 +89,7 @@ function enrichWithHullClient(Hull) {
 
   return (req, res, next) => {
     try {
-      const config = req.hull.config || ['organization', 'ship', 'secret'].reduce((cfg, k)=> {
+      const config = req.hull.config = req.hull.config || ['organization', 'ship', 'secret'].reduce((cfg, k)=> {
         const val = (req.query[k] || "").trim();
         if (typeof val === 'string') {
           cfg[k] = val;
@@ -168,14 +168,28 @@ function processHandlers(handlers) {
 
 
 function errorHandler(onError) {
-  return function(req, res, next) {
-    res.handleError = function(message, status) {
+  return (req, res, next) => {
+    res.handleError = (message, status) => {
       if (onError) onError(message, status);
       res.status(status);
       res.json({ message });
     };
     next();
   };
+}
+
+
+function metricsHandler(options) {
+  return (req, res, next) => {
+    const eventName = req.hull.message.type;
+    const source = req.hull.config.ship;
+
+    if (eventName && source) {
+      options.measure(`segment.request.${eventName}`, 1, { source });
+    }
+
+    next();
+  }
 }
 
 
@@ -204,6 +218,7 @@ module.exports = function SegmentHandler(options = {}) {
   app.use(verifyAuthToken(options));
   app.use(enrichWithHullClient(options.Hull));
   app.use(processHandlers(_handlers));
+  app.use(metricsHandler(options));
   app.use((req, res) => { res.json({ message: "thanks" }); });
 
   function handler(req, res) {

@@ -30,16 +30,16 @@ describe('Segment Ship', () => {
   const config = {
     organization: 'abc.hullapp.dev',
     ship: '56f3d53ef89a8791cb000004',
-    secret: 'shuut'
+    secret
   };
 
-  function sendRequest({ query, body, headers, Hull }) {
-    const client = request(app({ secret, Hull: Hull || Mocks.Hull }));
+  function sendRequest({ query, body, headers, Hull, measure }) {
+    const client = request(app({ secret, Hull: Hull || Mocks.Hull, measure }));
     return client .post('/segment')
-                  .query(query || {})
+                  .query(query || config)
                   .set(headers || {})
                   .type('json')
-                  .send(body);
+                  .send(body || track);
   }
 
   describe('Error payloads', () => {
@@ -50,7 +50,7 @@ describe('Segment Ship', () => {
     });
 
     it('Missing credentials', (done) => {
-      sendRequest({ body: track })
+      sendRequest({ body: track, query: {} })
           .expect({ message: 'Missing credentials' })
           .expect(400, done)
     });
@@ -144,6 +144,27 @@ describe('Segment Ship', () => {
           })
     })
 
+
+  })
+
+  describe('Collecting measure', () => {
+    it('call measure collector', (done) => {
+      const measure = sinon.spy();
+      const MockHull = function() {
+        this.get = (id) => Promise.resolve({ id })
+        this.as = () => this;
+        this.post = (path, params) => {
+          return Promise.resolve();
+        }
+      }
+      sendRequest({ measure })
+          .expect({ message: 'thanks' })
+          .expect(200)
+          .end((err, res) => {
+            assert(measure.withArgs('segment.request.track', 1, { source: config.ship }).calledOnce)
+            done()
+          })
+    })
 
   })
 

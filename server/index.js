@@ -6,6 +6,9 @@ import SegmentHandler from './handler';
 import eventsHandlers from './events'
 import jwt from 'jwt-simple';
 
+const noop = function() {};
+
+
 export default function(options) {
 
   const app = express();
@@ -77,6 +80,7 @@ export default function(options) {
     Hull: options.Hull,
     secret: options.secret,
     events: eventsHandlers,
+    measure: options.measure || noop,
     onError(err) {
       console.warn("Error handling segment event", err, err && err.stack);
     }

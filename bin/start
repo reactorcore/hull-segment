@@ -4,15 +4,39 @@ if (process.env.NEW_RELIC_LICENSE_KEY) {
   console.warn('Starting newrelic agent with key: ', process.env.NEW_RELIC_LICENSE_KEY);
   require('newrelic');
 }
-
 require("babel/register");
 const Hull = require('hull');
 const app = require('../server');
 const PORT = process.env.PORT || 8082;
+
 const options = {
   Hull,
   secret: process.env.SECRET,
-  devMode: process.env.NODE_ENV == 'development'
+  devMode: process.env.NODE_ENV == 'development',
+  measure: function() {}
+}
+
+if (process.env.LIBRATO_TOKEN && process.env.LIBRATO_USER) {
+  var librato = requre('librato-node');
+  librato.configure({
+    email: process.env.LIBRATO_USER,
+    token: process.env.LIBRATO_TOKEN
+  });
+  librato.on('error', function(err) {
+    console.error(err);
+  });
+
+  process.once('SIGINT', function() {
+    librato.stop(); // stop optionally takes a callback
+  });
+  librato.start();
+  options.measure = function(metric, value, options) {
+    try {
+      librato && librato.measure(metric, value, options);
+    } catch(err) {
+      console.warn('error in librato.measure', err);
+    }
+  }
 }
 
 console.log('Listening on port ' + PORT);
