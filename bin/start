@@ -17,7 +17,7 @@ const options = {
 }
 
 if (process.env.LIBRATO_TOKEN && process.env.LIBRATO_USER) {
-  var librato = requre('librato-node');
+  var librato = require('librato-node');
   librato.configure({
     email: process.env.LIBRATO_USER,
     token: process.env.LIBRATO_TOKEN
