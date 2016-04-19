@@ -2,6 +2,10 @@ import { reduce, isEmpty } from 'lodash'
 import { inspect } from 'util'
 
 function searchUsers(userId, groupId, hull) {
+  if (process.env.DEBUG) {
+    console.warn('[group] searchUsers', { userId, groupId });
+  }
+
   const params = {
     query: {
       filtered: {
