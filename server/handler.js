@@ -123,7 +123,15 @@ function enrichWithHullClient(Hull) {
         res.handleError("Missing credentials", 400);
       }
     } catch(err) {
-      res.handleError('La cest mort: ' + err.message, 500);
+      try {
+        const { message, stack } = err || {};
+        res.handleError('Unknown Error: ' + err.message, 500);
+        console.warn('Unknown Error: ', { message, stack });
+      } catch(err2) {
+        res.handleError('Unknown Error: ' + err, 500);
+        console.warn('Error: really', err2);
+      }
+
     }
   };
 }
