@@ -75,8 +75,9 @@ export class GroupBatchHandler {
 
       (function fetch(page = 1) {
         const pageParams = Object.assign({}, params, { page });
-        measure('search');
+        const startTime = new Date();
         return hull.post('search/user_reports', pageParams).then(({ data, pagination }) => {
+          measure('searchResponseTime', new Date() - startTime);
           data.map(u => users[u.id] = u)
           if (pagination.page >= pagination.pages) {
             resolve(values(users));
