@@ -10,7 +10,11 @@ export class GroupBatchHandler {
   constructor({ hull, ship, measure }) {
     this.hull = hull;
     this.ship = ship;
-    this.measure = (metric, value) => measure(`request.group.${metric}`, value);
+    this.measure = (metric, value) => {
+      if (typeof(measure) === 'function') {
+        measure(`request.group.${metric}`, value)
+      }
+    };
     this.groups = {};
     this.status = 'idle';
     this.flushLater = throttle(this.flush.bind(this), BATCH_THROTTLE);
@@ -62,10 +66,13 @@ export class GroupBatchHandler {
       include: ["id", "email", "external_id", "created_at", "traits_group/*"]
     };
 
+
+
+    const { hull, measure } = this;
+
     return new Promise((resolve, reject) => {
       const users = {};
-      const hull = this.hull;
-      const measure = this.measure;
+
       (function fetch(page = 1) {
         const pageParams = Object.assign({}, params, { page });
         measure('search');
