@@ -47,7 +47,7 @@ function updateUser(hull, user) {
     }
 
     if (process.env.DEBUG) {
-      console.warn('[identify]', { userId, anonymousId, properties, traits });
+      console.warn('[identify]', JSON.stringify({ userId, anonymousId, properties, traits }));
     }
 
     return client.put('me', properties).then((hullUser) => {

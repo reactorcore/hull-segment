@@ -42,7 +42,7 @@ export default function({ message }, { ship }){
   }
 
   if (!ship || !ship.settings || !ship.settings.write_key) {
-    console.warn('Missing credentials for ship', (ship || {}).id);
+    console.warn('No write_key for ship', (ship || {}).id);
     return Promise.reject(new Error("Missing credentials"));
   }
 
