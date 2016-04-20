@@ -166,7 +166,6 @@ function processHandlers(handlers) {
         });
       } else {
         res.handleError('Not supported', 501);
-        console.warn('Method not supported ' + eventName);
       }
     } catch ( err ) {
       res.handleError(err.toString(), 500);
@@ -203,6 +202,7 @@ function metricsHandler(options) {
 
 module.exports = function SegmentHandler(options = {}) {
   const _handlers = {};
+  const _flushers = [];
   const app = connect();
 
   function addEventHandlers(eventsHash) {
@@ -213,6 +213,10 @@ module.exports = function SegmentHandler(options = {}) {
   function addEventHandler(eventName, fn) {
     _handlers[eventName] = _handlers[eventName] || [];
     _handlers[eventName].push(fn);
+    if (typeof fn.flush === 'function') {
+      _flushers.push(fn.flush);
+    }
+
     return this;
   }
 
@@ -234,6 +238,9 @@ module.exports = function SegmentHandler(options = {}) {
   }
 
   handler.addEventHandler = addEventHandler;
+  handler.exit = () => {
+    return Promise.all(_flushers.map((fn) => fn()));
+  }
 
   return handler;
 };

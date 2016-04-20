@@ -6,7 +6,7 @@ if (process.env.NEW_RELIC_LICENSE_KEY) {
 }
 require("babel/register");
 const Hull = require('hull');
-const app = require('../server');
+const Server = require('../server');
 const PORT = process.env.PORT || 8082;
 
 const options = {
@@ -39,5 +39,25 @@ if (process.env.LIBRATO_TOKEN && process.env.LIBRATO_USER) {
   }
 }
 
+
+const app = Server(options);
+
+
+
+function exitNow() {
+  console.warn('Exiting now !');
+  process.exit();
+}
+
+function handleExit() {
+  console.log("Exiting... waiting 30 seconds workers to flush");
+  setTimeout(exitNow, 30000);
+  app.exit().then(exitNow);
+}
+
+
+process.on('SIGINT', handleExit);
+process.on('SIGTERM', handleExit);
+
 console.log('Listening on port ' + PORT);
-app(options).listen(PORT);
+app.listen(PORT);

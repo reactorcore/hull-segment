@@ -1,57 +1,174 @@
-import { reduce, isEmpty } from 'lodash'
-import { inspect } from 'util'
+import { reduce, isEmpty, values, map, throttle } from 'lodash'
+import Promise from 'bluebird';
 
-function searchUsers(userId, groupId, hull) {
-  if (process.env.DEBUG) {
-    console.warn('[group] searchUsers', { userId, groupId });
+const BATCH_HANDLERS = {};
+const MAX_BATCH_SIZE = 100;
+const BATCH_THROTTLE = 5000;
+
+export class GroupBatchHandler {
+
+  constructor(hull, ship, options = {}) {
+    this.hull = hull;
+    this.ship = ship;
+    this.options = options;
+    this.groups = {};
+    this.status = 'idle';
+    this.flushLater = throttle(this.flush.bind(this), BATCH_THROTTLE);
+    this.stats = { flush: 0, add: 0, flushing: 0, success: 0, error: 0 };
   }
 
-  const params = {
-    query: {
-      filtered: {
-        query: { match_all: {} },
-        filter: {
-          terms: { 'traits_group/id' : [groupId] }
-        }
-      }
-    },
-    raw: true,
-    per_page: 250,
-    include: ["id", "email", "external_id", "created_at", "traits_group/*"]
-  };
-  return hull.post('search/user_reports', params);
-}
+  static handle(event, { hull, ship }) {
+    const handler = BATCH_HANDLERS[ship.id] = BATCH_HANDLERS[ship.id] || new GroupBatchHandler(hull, ship);
+    handler.add(event, { hull, ship });
 
-function updateUser(hull, traits, user) {
-  const diff = reduce(traits, (t, v, k) => {
-    // drop nested properties
-    if (v !== user[`traits_group/${k}`] && typeof(v) !== 'object') {
-      t[`group/${k}`] = v;
+    if (Object.keys(handler.groups).length > MAX_BATCH_SIZE) {
+      handler.flush();
+    } else {
+      handler.flushLater();
     }
-    return t;
-  }, {});
 
-  if (process.env.DEBUG) {
-    console.warn('[group]', { user, traits, diff });
+    return handler;
   }
 
-  if (!isEmpty(diff)) {
-    return hull.as(user.id).traits(diff);
-  }
-}
-
-export default function group(event, { hull, ship }) {
-  const { handle_groups } = ship.settings || {};
-  if (handle_groups === true) {
+  add(event, { hull, ship }) {
+    this.stats.add += 1;
+    this.hull = hull;
+    this.ship = ship;
     const { userId, groupId, traits } = event;
-    const doUpdate = updateUser.bind(null, hull, { ...traits, id: groupId });
-    return searchUsers(userId, groupId, hull).then((res) => {
-      const current_user = res.data.reduce((current, user) => {
-        return user.external_id == userId ? user : current;
-      }, { id: { external_id: userId } });
-      const other_group_users = res.data.filter(u => u.external_id !== userId);
-      const users = [current_user].concat(other_group_users);
-      return Promise.all(users.map(doUpdate));
+    const group = this.groups[groupId] || { groupId, userIds: [], traits: {} };
+    group.traits = Object.assign({}, group.traits || {}, traits, { id: groupId });
+    if (userId && !group.userIds.includes(userId)) {
+      group.userIds.push(userId)
+    }
+
+    this.groups[groupId] = group;
+
+    return this;
+  }
+
+  searchUsers(groupIds) {
+    const params = {
+      query: {
+        filtered: {
+          query: { match_all: {} },
+          filter: {
+            terms: { 'traits_group/id' : groupIds }
+          }
+        }
+      },
+      raw: true,
+      per_page: 250,
+      include: ["id", "email", "external_id", "created_at", "traits_group/*"]
+    };
+
+    return new Promise((resolve, reject) => {
+      const users = {};
+      const hull = this.hull;
+      (function fetch(page = 1) {
+        const pageParams = Object.assign({}, params, { page });
+        return hull.post('search/user_reports', pageParams).then(({ data, pagination }) => {
+          data.map(u => users[u.id] = u)
+          if (pagination.page >= pagination.pages) {
+            resolve(values(users));
+          } else {
+            fetch(page + 1);
+          }
+        });
+      })();
+    })
+  }
+
+  getUsersByGroup(groupIds) {
+    return this.searchUsers(groupIds).then(users => {
+      return users.reduce((groups, user) => {
+        const groupId = user['traits_group/id'];
+        groups[groupId] = groups[groupId] || {};
+        if (user.external_id) {
+          groups[groupId][user.external_id] = user;
+        }
+        return groups;
+      }, {});
     });
   }
+
+  updateUsers(users, traits) {
+    return Promise.all(users.map(user => this.updateUser(user, traits)));
+  }
+
+  updateUser(user, traits) {
+    const diff = reduce(traits, (t, v, k) => {
+      // drop nested properties
+      if (v !== user[`traits_group/${k}`] && typeof(v) !== 'object') {
+        t[`group/${k}`] = v;
+      }
+      return t;
+    }, {});
+
+    if (!isEmpty(diff)) {
+      return this.hull.as(user.id).traits(diff).then(() => {
+        return { as: user.id, traits: diff };
+      });
+    } else {
+      return Promise.resolve({ as: user.id });
+    }
+  }
+
+  flush() {
+    this.stats.flush += 1;
+    this.stats.flushing += 1;
+    const groupIds = Object.keys(this.groups);
+    const groups = this.groups;
+    this.groups = {};
+    var ret = this.getUsersByGroup(groupIds).then((usersByGroup) => {
+      return Promise.all(map(usersByGroup, (groupUsers, groupId) => {
+        const { traits, userIds } = groups[groupId] || {};
+        const currentUsers = (userIds || []).reduce((cids, id) => {
+          cids[id]  = { id: { external_id: id } };
+          return cids;
+        }, {});
+
+        const users = values(Object.assign({}, currentUsers, groupUsers));
+
+        if (process.env.DEBUG) {
+          console.warn(`[group.flush]`, JSON.stringify({ stats: this.stats, shipId: this.ship.id, groupId, users: users.length, traits }));
+        }
+
+        return this.updateUsers(users, traits).then((res) => {
+          this.status = 'idle';
+          return { users: res, groupId };
+        });
+      }));
+    });
+
+    ret.then(() => {
+      this.stats.success += 1;
+      this.stats.flushing -= 1;
+    }, (err) => {
+      this.stats.error += 1;
+      this.stats.flushing -= 1;
+    })
+    return ret;
+  }
 }
+
+let exiting = false;
+
+function group(event, { hull, ship }) {
+  const { handle_groups } = ship.settings || {};
+  if (exiting) {
+    const err = new Error('Exiting...');
+    err.status = 503;
+    return Promise.reject(err);
+  } else if (event && event.groupId && handle_groups === true) {
+    return GroupBatchHandler.handle(event, { hull, ship });
+  }
+}
+
+group.flush = function() {
+  if (!exiting) {
+    exiting = true;
+    return Promise.all(map(BATCH_HANDLERS, (h) => h.flush()));
+  }
+}
+
+export default group;
