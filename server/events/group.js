@@ -18,6 +18,7 @@ export class GroupBatchHandler {
   }
 
   static handle(event, { hull, ship, measure }) {
+
     const handler = BATCH_HANDLERS[ship.id] = BATCH_HANDLERS[ship.id] || new GroupBatchHandler({ hull, ship, measure });
     handler.add(event, { hull, ship });
 
@@ -80,7 +81,7 @@ export class GroupBatchHandler {
     })
   }
 
-  getUsersByGroup(groupIds) {
+  getUsersByGroup(groupIds = []) {
     return this.searchUsers(groupIds).then(users => {
       return users.reduce((groups, user) => {
         const groupId = user['traits_group/id'];
@@ -89,7 +90,7 @@ export class GroupBatchHandler {
           groups[groupId][user.external_id] = user;
         }
         return groups;
-      }, {});
+      }, groupIds.reduce((g,i) => { g[i] = {}; return g }, {}));
     });
   }
 
