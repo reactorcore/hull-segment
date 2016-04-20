@@ -76,15 +76,21 @@ export default function(options) {
     }
   }));
 
-  app.post('/segment', SegmentHandler({
+  const segment = SegmentHandler({
     Hull: options.Hull,
     secret: options.secret,
     events: eventsHandlers,
     measure: options.measure || noop,
     onError(err) {
-      console.warn("Error handling segment event", err, err && err.stack);
+      if (process.env.DEBUG) {
+        console.warn("Error handling segment event", err, err && err.stack);
+      }
     }
-  }));
+  });
+
+  app.post('/segment', segment);
+
+  app.exit = () => segment.exit();
 
   return app;
 }
