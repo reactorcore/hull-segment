@@ -129,14 +129,13 @@ function enrichWithHullClient(Hull) {
         console.warn('Unknown Error: ', { message, stack });
       } catch(err2) {
         res.handleError('Unknown Error: ' + err, 500);
-        console.warn('Error: really', err2);
+        console.warn('Unknown Error:', err2);
       }
-
     }
   };
 }
 
-function processHandlers(handlers) {
+function processHandlers(handlers, { measure }) {
   return function(req, res, next) {
     try {
       const eventName = req.hull.message.type
@@ -144,7 +143,11 @@ function processHandlers(handlers) {
       if (eventHandlers && eventHandlers.length > 0) {
         const context = {
           hull: req.hull.client,
-          ship: req.hull.ship
+          ship: req.hull.ship,
+          measure: (metric, value = 1) => {
+            const source = req.hull.ship.id;
+            measure(`segment.${metric}`, value, { source });
+          }
         };
 
         const { message } = req.hull;
@@ -229,7 +232,7 @@ module.exports = function SegmentHandler(options = {}) {
   // app.use(verifySignature(options));
   app.use(verifyAuthToken(options));
   app.use(enrichWithHullClient(options.Hull));
-  app.use(processHandlers(_handlers));
+  app.use(processHandlers(_handlers, options));
   app.use(metricsHandler(options));
   app.use((req, res) => { res.json({ message: "thanks" }); });
 

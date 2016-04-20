@@ -7,18 +7,18 @@ const BATCH_THROTTLE = 5000;
 
 export class GroupBatchHandler {
 
-  constructor(hull, ship, options = {}) {
+  constructor({ hull, ship, measure }) {
     this.hull = hull;
     this.ship = ship;
-    this.options = options;
+    this.measure = (metric, value) => measure(`request.group.${metric}`, value);
     this.groups = {};
     this.status = 'idle';
     this.flushLater = throttle(this.flush.bind(this), BATCH_THROTTLE);
     this.stats = { flush: 0, add: 0, flushing: 0, success: 0, error: 0 };
   }
 
-  static handle(event, { hull, ship }) {
-    const handler = BATCH_HANDLERS[ship.id] = BATCH_HANDLERS[ship.id] || new GroupBatchHandler(hull, ship);
+  static handle(event, { hull, ship, measure }) {
+    const handler = BATCH_HANDLERS[ship.id] = BATCH_HANDLERS[ship.id] || new GroupBatchHandler({ hull, ship, measure });
     handler.add(event, { hull, ship });
 
     if (Object.keys(handler.groups).length > MAX_BATCH_SIZE) {
@@ -64,8 +64,10 @@ export class GroupBatchHandler {
     return new Promise((resolve, reject) => {
       const users = {};
       const hull = this.hull;
+      const measure = this.measure;
       (function fetch(page = 1) {
         const pageParams = Object.assign({}, params, { page });
+        measure('search');
         return hull.post('search/user_reports', pageParams).then(({ data, pagination }) => {
           data.map(u => users[u.id] = u)
           if (pagination.page >= pagination.pages) {
@@ -114,6 +116,7 @@ export class GroupBatchHandler {
   }
 
   flush() {
+    this.measure('flush');
     this.stats.flush += 1;
     this.stats.flushing += 1;
     const groupIds = Object.keys(this.groups);
@@ -153,14 +156,14 @@ export class GroupBatchHandler {
 
 let exiting = false;
 
-function group(event, { hull, ship }) {
+function group(event, { hull, ship, measure }) {
   const { handle_groups } = ship.settings || {};
   if (exiting) {
     const err = new Error('Exiting...');
     err.status = 503;
     return Promise.reject(err);
   } else if (event && event.groupId && handle_groups === true) {
-    return GroupBatchHandler.handle(event, { hull, ship });
+    return GroupBatchHandler.handle(event, { hull, ship, measure });
   }
 }
 
