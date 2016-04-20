@@ -108,6 +108,7 @@ export class GroupBatchHandler {
     }, {});
 
     if (!isEmpty(diff)) {
+      this.measure('updateUser');
       return this.hull.as(user.id).traits(diff).then(() => {
         return { as: user.id, traits: diff };
       });
