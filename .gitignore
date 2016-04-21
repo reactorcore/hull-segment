@@ -4,4 +4,5 @@ stats.json
 .DS_Store
 dist
 npm-debug.log
+newrelic_agent.log
 .env*
