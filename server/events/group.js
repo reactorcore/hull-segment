@@ -5,8 +5,6 @@ const BATCH_HANDLERS = {};
 const MAX_BATCH_SIZE = parseInt(process.env.MAX_BATCH_SIZE || 100, 10);
 const BATCH_THROTTLE = parseInt(process.env.BATCH_THROTTLE || 5000, 10);
 
-console.warn('Starting with MAX_BATCH_SIZE', { value: MAX_BATCH_SIZE, type: typeof(MAX_BATCH_SIZE) })
-
 export class GroupBatchHandler {
 
   constructor({ hull, ship, measure }) {
