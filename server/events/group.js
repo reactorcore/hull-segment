@@ -2,8 +2,10 @@ import { reduce, isEmpty, values, map, throttle } from 'lodash'
 import Promise from 'bluebird';
 
 const BATCH_HANDLERS = {};
-const MAX_BATCH_SIZE = 100;
-const BATCH_THROTTLE = 5000;
+const MAX_BATCH_SIZE = parseInt(process.env.MAX_BATCH_SIZE || 100, 10);
+const BATCH_THROTTLE = parseInt(process.env.BATCH_THROTTLE || 5000, 10);
+
+console.warn('Starting with MAX_BATCH_SIZE', { value: MAX_BATCH_SIZE, type: typeof(MAX_BATCH_SIZE) })
 
 export class GroupBatchHandler {
 
@@ -65,8 +67,6 @@ export class GroupBatchHandler {
       per_page: 250,
       include: ["id", "email", "external_id", "created_at", "traits_group/*"]
     };
-
-
 
     const { hull, measure } = this;
 
