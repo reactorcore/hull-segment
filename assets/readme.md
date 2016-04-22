@@ -24,7 +24,7 @@ Paste it into your integrations page. Alternatively, just click the "Enable with
 
 Enable **Guest Users** in your Dashboard's **Settings > User Authentication > Login Options**. This will create users for each `identify` call, even those without a User ID which is useful to track Leads.
 
-![Guest](/Users/romain/Sites/Core/hull.io/source/assets/segment/guest.png)
+![Guest](https://segment.hull.io/guest.png)
 
 This is disabled by default because it can greatly increase the number of users in your database. When enabled, users will be tracked from their very first visit and action, allowing you to build segments based on complete customer journeys.
 
