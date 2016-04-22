@@ -9,16 +9,16 @@ It helps you creates a single actionable profile and uniform segments that sync 
 Hull receives data from Segment using the **Segment Ship**. Here's how to install it.
 
 Install the Segment Ship on your organization. If you just installed Hull, click on "Add a ship" on the overview page.
-![Home](https://segment.hull.io/docs/home.png)
+![Home](https://segment.hull.io/home.png)
 
 Pick the **Segment** Ship from the list.
-![List](https://segment.hull.io/docs/ship_list.png)
+![List](https://segment.hull.io/ship_list.png)
 
 Enter the Segment ship Settings, Copy the API Key
-![Segment](https://segment.hull.io/docs/ship_segment.png)
+![Segment](https://segment.hull.io/ship_segment.png)
 
 Paste it into your integrations page. Alternatively, just click the "Enable with Segment" button.
-![Segment](https://segment.hull.io/docs/segment.png)
+![Segment](https://segment.hull.io/segment.png)
 
 
 
