@@ -68,7 +68,7 @@ Every `track` in Segment will create a new Event on Hull with `source:'segment'`
 
 ### Group
 
-Each group call in Segment will apply the group's traits as traits on the users that belong to the group.
+Group calls in Segment will apply the group's traits as traits on the users that belong to the group.
 
 For instance:
 
@@ -88,6 +88,6 @@ will add the following traits on all users that belong to the group :
 }
 ```
 
-_Note: Internally, we flatten objects and use '/' as a separator, meaning they're really stored as `trait_group/name`. Our Libraries handle nesting for you when you receive data coming from Hull_
+_Note: Internally, we flatten objects and use '/' as a separator. They're really stored as `traits_group/name`. Our Libraries handle nesting for you when you receive data coming from Hull_
 
-__Note: This feature is optional and not enabled by default. You should only be enabled if your users can only belong to one group.__
+__Note: This feature is optional and not enabled by default. You should only enable it if your users can only belong to one group.__
