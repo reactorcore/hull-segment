@@ -4,7 +4,7 @@ Hull is a Customer Data Platform that makes it easy to collect, enrich and trans
 
 It helps you creates a single actionable profile and uniform segments that sync to all your tools and make cross-channel, end-to-end personalization easy.
 
-## Getting Started
+# Getting Started
 
 Hull receives data from Segment using the **Segment Ship**. Here's how to install it.
 
@@ -20,9 +20,15 @@ Enter the Segment ship Settings, Copy the API Key
 Paste it into your integrations page. Alternatively, just click the "Enable with Segment" button.
 ![Segment](https://segment.hull.io/segment.png)
 
+## Tracking Data from anonymous users and Leads
 
+Enable **Guest Users** in your Dashboard's **Settings > User Authentication > Login Options**. This will create users for each `identify` call, even those without a User ID which is useful to track Leads.
 
-# Publishing data back to Segment
+![Guest](/Users/romain/Sites/Core/hull.io/source/assets/segment/guest.png)
+
+This is disabled by default because it can greatly increase the number of users in your database. When enabled, users will be tracked from their very first visit and action, allowing you to build segments based on complete customer journeys.
+
+## Publishing data back to Segment
 
 If you enter your __Segment Write Key__ in the Ship's settings, then Hull will send customer data to Segment. When a user enters or leaves a Hull segment, a new `identify` call with be sent with the following traits :
 
