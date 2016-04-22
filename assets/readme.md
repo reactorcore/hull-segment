@@ -1,16 +1,49 @@
+# Hull
+
+Hull is a Customer Data Platform that makes it easy to collect, enrich and transform all customer events and properties in one place.
+
+It helps you creates a single actionable profile and uniform segments that sync to all your tools and make cross-channel, end-to-end personalization easy.
+
 ## Getting Started
 
-Once you’ve installed the Segment ship on your organization, turn on Hull from the Segment integrations page. Get your API Key from ship's settings page on Hull and add it to segment.
+Hull receives data from Segment using the **Segment Ship**. Here's how to install it.
+
+Install the Segment Ship on your organization. If you just installed Hull, click on "Add a ship" on the overview page.
+![Home](https://segment.hull.io/docs/home.png)
+
+Pick the **Segment** Ship from the list.
+![List](https://segment.hull.io/docs/ship_list.png)
+
+Enter the Segment ship Settings, Copy the API Key
+![Segment](https://segment.hull.io/docs/ship_segment.png)
+
+Paste it into your integrations page. Alternatively, just click the "Enable with Segment" button.
+![Segment](https://segment.hull.io/docs/segment.png)
+
+
+
+# Publishing data back to Segment
+
+If you enter your __Segment Write Key__ in the Ship's settings, then Hull will send customer data to Segment. When a user enters or leaves a Hull segment, a new `identify` call with be sent with the following traits :
+
+```js
+analytics.identify(userId, {
+	hull_segments: #all matching segment names joined by a ','#
+})
+```
+
+# Features
 
 Hull supports the `identify`, `track`, and `group` methods.
 
-### Identify
+Hull stores customer properties and events and makes them available for segmentation in the Dashboard.
 
-Every user identified on Segment with a `userId` will be created as a User on Hull.
+From there you can create and save audiences, transform and enrich customer data with *Ships*.
 
-Segment's `userId` will be mapped to Hull's `external_id` field.
 
-#### First level user attributes
+### Traits
+
+Every user identified on Segment with a `userId` will be created as a User on Hull. Segment's `userId` will be mapped to Hull's `external_id` field.
 
 The following traits will be stored as first level fields on the User object
 
@@ -27,9 +60,7 @@ The following traits will be stored as first level fields on the User object
 - picture
 - username
 
-#### Custom traits
-
-All other traits from the `identify` call will be stored as [custom traits](http://www.hull.io/docs/references/hull_js/#traits) on Hull.
+All other attributes from the `identify` call will be stored as [custom traits](http://www.hull.io/docs/references/hull_js/#traits) on Hull.
 
 ### Track
 
@@ -39,31 +70,24 @@ Every `track` in Segment will create a new Event on Hull with `source:'segment'`
 
 Each group call in Segment will apply the group's traits as traits on the users that belong to the group.
 
-For example:
+For instance:
 
-      identify.group('123', { name: 'Wonderful', city: 'Paris' });
+```js
+identify.group('123', { name: 'Wonderful', city: 'Paris' });
+```
 
 will add the following traits on all users that belong to the group :
 
-      {
-        group: {
-          id: '123',
-          name: 'Wonderful',
-          city: 'Paris'
-        }
-      }
+```json
+{
+	group: {
+	  id: '123',
+	  name: 'Wonderful',
+	  city: 'Paris'
+	}
+}
+```
 
 _Note: Internally, we flatten objects and use '/' as a separator, meaning they're really stored as `trait_group/name`. Our Libraries handle nesting for you when you receive data coming from Hull_
 
 __Note: This feature is optional and not enabled by default. You should only be enabled if your users can only belong to one group.__
-
-
-## Publishing data back to Segment
-
-If you enter your __Segment Write Key__ in the Ship's settings, then Hull will send customer data to Segment. When a user enters or leaves a Hull segment, a new `identify` call with be sent with the following traits :
-
-    analytics.identify(userId, {
-      hull_segments: #all matching segment names joined by a ','#
-    })
-
-
