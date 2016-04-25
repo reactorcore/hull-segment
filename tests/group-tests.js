@@ -129,7 +129,8 @@ describe('GroupBatchHandler', () => {
       assert(hull.as.calledWith(groupUser.as));
       assert(hull.traits.calledWith({ 'group/id': groupId, 'group/bim' : 'boum', 'group/chick' : 'chack' }));
       assert(hull.traits.calledWith({ 'group/bim' : 'boum', 'group/chick' : 'chack' }));
-    }, done).then(done).catch(done);
+      done();
+    }, done);
 
   });
 

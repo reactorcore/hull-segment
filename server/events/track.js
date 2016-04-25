@@ -1,6 +1,6 @@
 import { reduce } from 'lodash';
 
-export default function handleTrack(track, { hull, ship }) {
+export default function handleTrack(track, { hull, ship, measure, log }) {
   const { context, anonymousId, event, properties, userId, originalTimestamp, sentAt, receivedAt } = track;
   const page = (context || {}).page || {};
 
@@ -33,8 +33,18 @@ export default function handleTrack(track, { hull, ship }) {
   }, {});
 
   const client = userId ? hull.as({ external_id: userId }) : hull;
-  if (process.env.DEBUG) {
-    console.warn('[track]', JSON.stringify({ userId, payload }))
-  }
-  return client.post('t', payload);
+
+  const tracking = client.post('t', payload);
+
+  tracking.then(
+    ok => {
+      log('track.success', payload);
+    },
+    error => {
+      measure('request.track.error');
+      log('track.error', { error });
+    }
+  );
+
+  return tracking;
 }

@@ -5,9 +5,11 @@ const BATCH_HANDLERS = {};
 const MAX_BATCH_SIZE = parseInt(process.env.MAX_BATCH_SIZE || 100, 10);
 const BATCH_THROTTLE = parseInt(process.env.BATCH_THROTTLE || 5000, 10);
 
+const noop = function() {};
+
 export class GroupBatchHandler {
 
-  constructor({ hull, ship, measure }) {
+  constructor({ hull, ship, measure, log }) {
     this.hull = hull;
     this.ship = ship;
     this.measure = (metric, value) => {
@@ -15,15 +17,16 @@ export class GroupBatchHandler {
         measure(`request.group.${metric}`, value)
       }
     };
+
+    this.log = log || noop;
     this.groups = {};
     this.status = 'idle';
     this.flushLater = throttle(this.flush.bind(this), BATCH_THROTTLE);
     this.stats = { flush: 0, add: 0, flushing: 0, success: 0, error: 0 };
   }
 
-  static handle(event, { hull, ship, measure }) {
-
-    const handler = BATCH_HANDLERS[ship.id] = BATCH_HANDLERS[ship.id] || new GroupBatchHandler({ hull, ship, measure });
+  static handle(event, { hull, ship, measure, log }) {
+    const handler = BATCH_HANDLERS[ship.id] = BATCH_HANDLERS[ship.id] || new GroupBatchHandler({ hull, ship, measure, log });
     handler.add(event, { hull, ship });
 
     if (Object.keys(handler.groups).length > MAX_BATCH_SIZE) {
@@ -140,9 +143,7 @@ export class GroupBatchHandler {
 
         const users = values(Object.assign({}, currentUsers, groupUsers));
 
-        if (process.env.DEBUG) {
-          console.warn(`[group.flush]`, JSON.stringify({ stats: this.stats, shipId: this.ship.id, groupId, users: users.length, traits }));
-        }
+        this.log('group.flush', { stats: this.stats, shipId: this.ship.id, groupId, users: users.length, traits });
 
         return this.updateUsers(users, traits).then((res) => {
           this.status = 'idle';
