@@ -27,10 +27,6 @@ const IGNORED_TRAITS = [
   'visitToken'
 ];
 
-function updateTraits(hull, userId, traits) {
-  return hull.as(userId, false).traits(traits);
-}
-
 function updateUser(hull, user) {
   try {
     const { userId, anonymousId, properties, traits } = user;
@@ -50,9 +46,7 @@ function updateUser(hull, user) {
       console.warn('[identify]', JSON.stringify({ userId, anonymousId, properties, traits }));
     }
 
-    return client.put('me', properties).then((hullUser) => {
-      return updateTraits(hull, hullUser.id, traits);
-    });
+    return client.put('me', Object.assign({}, properties, { traits }));
   } catch (err) {
     return Promise.reject(err);
   }
