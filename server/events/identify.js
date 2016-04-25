@@ -40,6 +40,8 @@ function updateUser(hull, user) {
       client = hull.as(hullAs);
     } else if (anonymousId) {
       properties._bid = anonymousId;
+      properties.contact_email = properties.email;
+      delete properties.email;
     }
 
     if (process.env.DEBUG) {
