@@ -81,6 +81,7 @@ export default function(options) {
     secret: options.secret,
     events: eventsHandlers,
     measure: options.measure || noop,
+    log: options.log || noop,
     onError(err) {
       if (process.env.DEBUG) {
         console.warn("Error handling segment event", err, err && err.stack);

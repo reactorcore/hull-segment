@@ -15,7 +15,10 @@ const Mocks = {
       }
     }
     this.post = ()=> {
-      Promise.resolve({})
+      return Promise.resolve({})
+    }
+    this.put = ()=> {
+      return Promise.resolve({})
     }
     this.as = () => {
       return this;
@@ -33,8 +36,8 @@ describe('Segment Ship', () => {
     secret
   };
 
-  function sendRequest({ query, body, headers, Hull, measure }) {
-    const client = request(app({ secret, Hull: Hull || Mocks.Hull, measure }));
+  function sendRequest({ query, body, headers, Hull, measure, log }) {
+    const client = request(app({ secret, Hull: Hull || Mocks.Hull, measure, log }));
     return client .post('/segment')
                   .query(query || config)
                   .set(headers || {})
@@ -143,8 +146,6 @@ describe('Segment Ship', () => {
             done()
           })
     })
-
-
   })
 
   describe('Collecting measure', () => {
@@ -162,6 +163,29 @@ describe('Segment Ship', () => {
           .expect(200)
           .end((err, res) => {
             assert(measure.withArgs('segment.request.track', 1, { source: config.ship }).calledOnce)
+            done()
+          })
+    })
+
+  })
+
+  describe('Collecting logs', () => {
+    it('call logs collector', (done) => {
+      const log = sinon.spy(function(msg, data) {
+        console.warn('YOU SPYED ON MY LOGZ ?', {msg, data})
+      });
+      const MockHull = function() {
+        this.get = (id) => Promise.resolve({ id })
+        this.as = () => this;
+        this.post = (path, params) => {
+          return Promise.resolve();
+        }
+      }
+      sendRequest({ log })
+          .expect({ message: 'thanks' })
+          .expect(200)
+          .end((err, res) => {
+            assert(log.calledOnce)
             done()
           })
     })

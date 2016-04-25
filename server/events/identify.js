@@ -44,17 +44,20 @@ function updateUser(hull, user) {
       delete properties.email;
     }
 
-    if (process.env.DEBUG) {
-      console.warn('[identify]', JSON.stringify({ userId, anonymousId, properties, traits }));
-    }
-
-    return client.put('me', Object.assign({}, properties, { traits }));
+    const params = Object.assign({}, properties, { traits });
+    return client.put('me', params).then(
+      response => { return { params, response } },
+      error => {
+        error.params = params;
+        throw error
+      }
+    );
   } catch (err) {
     return Promise.reject(err);
   }
 }
 
-export default function handleIdentify(payload, { hull }) {
+export default function handleIdentify(payload, { hull, ship, measure, log }) {
   const { context, traits, userId, anonymousId } = payload;
   const user = reduce((traits || {}), (u, v, k) => {
     if (v == null) return u;
@@ -69,6 +72,19 @@ export default function handleIdentify(payload, { hull }) {
   }, { userId, anonymousId, properties: {}, traits: {} });
 
   if (!isEmpty(user.traits) || !isEmpty(user.properties)) {
-    return updateUser(hull, user);
+    const updating = updateUser(hull, user);
+
+    updating.then(
+      ({ params }) => {
+        measure('request.identify.updateUser');
+        log('identify.success', params);
+      },
+      error => {
+        measure('request.identify.updateUser.error');
+        log('identify.error', { error });
+      }
+    );
+
+    return updating;
   }
 }
