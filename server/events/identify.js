@@ -44,8 +44,8 @@ function updateUser(hull, user) {
       delete properties.email;
     }
 
-    const params = Object.assign({}, properties, { traits });
-    return client.put('me', params).then(
+    const params = Object.assign({}, traits, properties);
+    return client.traits(params).then(
       response => { return { params, response } },
       error => {
         error.params = params;
