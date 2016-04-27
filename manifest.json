@@ -21,6 +21,18 @@
       "format"     : "string"
     }
   ],
+  "private_settings": [
+    {
+      "name": "synchronized_properties",
+      "title": "Properties sent back to segment",
+      "type": "array",
+      "format": "table",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    }
+  ],
   "settings": [
     {
       "name":"write_key",

@@ -1,6 +1,4 @@
 import _ from 'lodash';
-import Analytics from 'analytics-node';
-
 
 function camelize(str) {
   return str.replace (/(?:^|[-_])(\w)/g, function (_, c, i) {
@@ -34,33 +32,60 @@ const getKey = function getKey(arr, k){
   }, []);
 }
 
-export default function({ message }, { ship }){
-  const { user, segments } = message;
+export default function(Analytics) {
 
-  if (!user || !user.id) {
-    return false;
-  }
+  return function({ message }, { ship }) {
 
-  if (!ship || !ship.settings || !ship.settings.write_key) {
-    console.warn('No write_key for ship', (ship || {}).id);
-    return Promise.reject(new Error("Missing credentials"));
-  }
+    console.warn('Here is Analytics onde !');
 
-  var analytics = new Analytics(ship.settings.write_key);
+    const { user={}, segments } = message;
 
-  const traits = {
-    hull_segments: getKey(segments, 'name').join(",")
-  };
-
-  const context = {
-    active: false,
-    ip: 0,
-    integrations: {
-      Hull: false
+    if(!ship || !user || !user.id || !user.external_id) {
+      return false;
     }
+
+    const userId = user['external_id'];
+    const groupId = user['traits_group/id'];
+
+
+    // Configure Analytics.js with write key
+    // Ignore if write_key is not present
+    const { write_key, handle_groups } = ship.settings || {};
+    if (!write_key) {
+      console.warn('No write_key for ship', ship.id);
+      return Promise.reject(new Error("Missing credentials"));
+    }
+    const analytics = new Analytics(write_key);
+
+    // Build traits that will be sent to Segment
+    // Use hull_segments by default
+
+    const traits = {
+      hull_segments: getKey(segments, 'name').join(",")
+    };
+
+    // Custom properties to be synchronized
+    const { synchronized_properties=[] } = ship.private_settings || {};
+
+    if(synchronized_properties && synchronized_properties.length > 0) {
+      synchronized_properties.map((prop) => {
+        traits[prop.replace(/^traits_/,'').replace('/','_')] = user[prop];
+      });
+    }
+
+    const context = {
+      active: false,
+      ip: 0,
+      integrations: {
+        Hull: false
+      }
+    }
+
+    // Add group if available
+    if (handle_groups && groupId) {
+      context.groupId = groupId;
+    }
+
+    return analytics.identify({ userId, traits, context });
   }
-
-  const userId = user.external_id || user.id;
-
-  analytics.identify({ userId, traits, context });
 }
