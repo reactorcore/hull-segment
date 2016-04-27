@@ -35,7 +35,19 @@ const getKey = function getKey(arr, k){
 }
 
 export default function({ message }, { ship }){
-  const { user, segments } = message;
+  const { user={}, segments } = message;
+  const { group={} } = user;
+
+  if(!user.external_id){ return false; }
+
+  let customGroup={};
+
+  if((ship.private_settings||{}).synchronized_properties){
+    customGroup = ship.private_settings.synchronized_properties.reduce((memo, prop)=>{
+      memo[prop.replace(/^traits_/,'').replace('/','_')] = user[prop];
+      return memo;
+    }, {});
+  }
 
   if (!user || !user.id) {
     return false;
@@ -49,7 +61,8 @@ export default function({ message }, { ship }){
   var analytics = new Analytics(ship.settings.write_key);
 
   const traits = {
-    hull_segments: getKey(segments, 'name').join(",")
+    hull_segments: getKey(segments, 'name').join(","),
+    ...customGroup
   };
 
   const context = {
@@ -58,6 +71,10 @@ export default function({ message }, { ship }){
     integrations: {
       Hull: false
     }
+  }
+
+  if(group.id){
+    context.groupId = group.id;
   }
 
   const userId = user.external_id || user.id;

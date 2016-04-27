@@ -71,6 +71,7 @@ export default function(options) {
     onSubscribe() {
       console.warn("Hello new subscriber !");
     },
+    groupTraits: false,
     events: {
       'user_report:update': require('./update-user')
     }
