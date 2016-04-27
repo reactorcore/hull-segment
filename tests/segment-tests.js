@@ -133,16 +133,16 @@ describe('Segment Ship', () => {
       const MockHull = function() {
         this.get = (id) => Promise.resolve({ id })
         this.as = () => this;
-        this.put = (path, params) => {
-          putSpy(path, params);
-          return Promise.resolve({ id: 'user_id', ...params });
+        this.traits = (params) => {
+          putSpy(params);
+          return Promise.resolve('');
         }
       }
       sendRequest({ body: identify, query: config, Hull: MockHull })
           .expect(200)
           .expect({ message: 'thanks' })
           .end((err, res) => {
-            assert(putSpy.withArgs('me').calledOnce)
+            assert(putSpy.calledOnce)
             done()
           })
     })
