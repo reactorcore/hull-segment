@@ -34,9 +34,15 @@ If you enter your __Segment Write Key__ in the Ship's settings, then Hull will s
 
 ```js
 analytics.identify(userId, {
-	hull_segments: #all matching segment names joined by a ','#
+  "hull_segments": "all matching segment names joined by a ','"
+  "custom_1": "value_1",
+  "custom_2": "value_2",
+},{
+  "groupId": "user's group Id if he has one"
 })
 ```
+
+The traits you list in the Ship's settings are sent back to Segment. This lets you send to other tools any trait that has been computed or collected from enrichment steps.
 
 # Features
 
@@ -79,18 +85,18 @@ Group calls in Segment will apply the group's traits as traits on the users that
 For instance:
 
 ```js
-identify.group('123', { name: 'Wonderful', city: 'Paris' });
+analytics.group("123", { name: "Wonderful", city: "Paris" });
 ```
 
 will add the following traits on all users that belong to the group :
 
 ```json
 {
-	group: {
-	  id: '123',
-	  name: 'Wonderful',
-	  city: 'Paris'
-	}
+  "group": {
+    "id": "123",
+    "name": "Wonderful",
+    "city": "Paris"
+  }
 }
 ```
 
