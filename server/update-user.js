@@ -34,36 +34,43 @@ const getKey = function getKey(arr, k){
   }, []);
 }
 
-export default function({ message }, { ship }){
+export default function({ message }, { ship }) {
+
   const { user={}, segments } = message;
-  const { group={} } = user;
 
-  if(!user.external_id){ return false; }
-
-  let customGroup={};
-
-  if((ship.private_settings||{}).synchronized_properties){
-    customGroup = ship.private_settings.synchronized_properties.reduce((memo, prop)=>{
-      memo[prop.replace(/^traits_/,'').replace('/','_')] = user[prop];
-      return memo;
-    }, {});
-  }
-
-  if (!user || !user.id) {
+  if(!ship || !user || !user.id || !user.external_id) {
     return false;
   }
 
-  if (!ship || !ship.settings || !ship.settings.write_key) {
-    console.warn('No write_key for ship', (ship || {}).id);
+  const userId = user['external_id'];
+  const groupId = user['traits_group/id'];
+
+
+  // Configure Analytics.js with write key
+  // Ignore if write_key is not present
+  const { write_key, handle_groups } = ship.settings || {};
+  if (!write_key) {
+    console.warn('No write_key for ship', ship.id);
     return Promise.reject(new Error("Missing credentials"));
   }
+  const analytics = new Analytics(write_key);
 
-  var analytics = new Analytics(ship.settings.write_key);
+
+  // Build traits that will be sent to Segment
+  // Use hull_segments by default
 
   const traits = {
-    hull_segments: getKey(segments, 'name').join(","),
-    ...customGroup
+    hull_segments: getKey(segments, 'name').join(",")
   };
+
+  // Custom properties to be synchronized
+  const { synchronized_properties=[] } = ship.private_settings || {};
+
+  if(synchronized_properties && synchronized_properties.length > 0) {
+    synchronized_properties.map((prop) => {
+      traits[prop.replace(/^traits_/,'').replace('/','_')] = user[prop];
+    });
+  }
 
   const context = {
     active: false,
@@ -73,11 +80,10 @@ export default function({ message }, { ship }){
     }
   }
 
-  if(group.id){
-    context.groupId = group.id;
+  // Add group if available
+  if (handle_groups && groupId) {
+    context.groupId = groupId;
   }
-
-  const userId = user.external_id || user.id;
 
   analytics.identify({ userId, traits, context });
 }
