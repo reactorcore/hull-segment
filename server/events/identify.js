@@ -45,7 +45,7 @@ function updateUser(hull, user) {
     }
 
     const params = Object.assign({}, traits, properties);
-    return client.traits(params).then(
+    return client.post('firehose/traits', params).then(
       response => { return { params, response } },
       error => {
         error.params = params;
