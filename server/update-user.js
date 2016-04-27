@@ -36,7 +36,6 @@ export default function(Analytics) {
 
   return function({ message }, { ship }) {
 
-    console.warn('Here is Analytics onde !');
 
     const { user={}, segments } = message;
 
@@ -86,6 +85,10 @@ export default function(Analytics) {
       context.groupId = groupId;
     }
 
-    return analytics.identify({ userId, traits, context });
+    const ret = analytics.identify({ userId, traits, context });
+
+    console.warn(`[${ship.id}] segment.send.identify`, JSON.stringify({ userId, traits, context }));
+
+    return ret;
   }
 }
