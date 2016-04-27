@@ -5,6 +5,8 @@ import devMode from './dev-mode';
 import SegmentHandler from './handler';
 import eventsHandlers from './events'
 import jwt from 'jwt-simple';
+import Analytics from 'analytics-node';
+import updateUser from './update-user';
 
 const noop = function() {};
 
@@ -73,7 +75,7 @@ export default function(options) {
     },
     groupTraits: false,
     events: {
-      'user_report:update': require('./update-user')
+      'user_report:update': updateUser(Analytics)
     }
   }));
 
