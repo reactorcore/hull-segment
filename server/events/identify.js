@@ -23,30 +23,30 @@ const ALIASED_FIELDS = {
 
 const IGNORED_TRAITS = [
   'id',
+  'external_id',
+  'guest_id',
   'uniqToken',
   'visitToken'
 ];
 
 function updateUser(hull, user) {
   try {
-    const { userId, anonymousId, properties, traits } = user;
-    let client = hull;
 
-    if (userId) {
-      let hullAs = { external_id: userId };
-      if (anonymousId) {
-        hullAs.guest_id = anonymousId;
-      }
-      client = hull.as(hullAs);
-    } else if (anonymousId) {
-      properties._bid = anonymousId;
-      properties.contact_email = properties.email;
-      delete properties.email;
+    const { userId, anonymousId, properties, traits={} } = user;
+    const user = { external_id: userId, guest_id: anonymousId }
+    if (!user.guest_id && !user.external_id){ return false; }
+    ​
+    if(traits.email){
+      //we enforce email unicity, so we never want to store email in the main email field
+      //because we don't know if the customer is enforcing unicity.
+      traits.contact_email = traits.email;
+      delete traits.email;
     }
-
-    const params = Object.assign({}, traits, properties);
-    return client.post('firehose/traits', params).then(
-      response => { return { params, response } },
+    ​
+    return hull.as(user).post('firehose/traits', traits).then(
+      response => {
+        return { params, response }
+      },
       error => {
         error.params = params;
         throw error
