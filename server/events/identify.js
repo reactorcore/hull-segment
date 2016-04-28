@@ -1,4 +1,5 @@
 import { isEmpty, reduce, include } from 'lodash'
+import scoped from '../scope-hull-client';
 
 const TOP_LEVEL_FIELDS = [
   'name',
@@ -33,22 +34,21 @@ function updateUser(hull, user) {
   try {
 
     const { userId, anonymousId, properties, traits={} } = user;
-    const user = { external_id: userId, guest_id: anonymousId }
-    if (!user.guest_id && !user.external_id){ return false; }
-    ​
-    if(traits.email){
+    if (!userId && !anonymousId){ return false; }
+
+    if (traits.email){
       //we enforce email unicity, so we never want to store email in the main email field
       //because we don't know if the customer is enforcing unicity.
       traits.contact_email = traits.email;
       delete traits.email;
     }
-    ​
-    return hull.as(user).post('firehose/traits', traits).then(
-      response => {
-        return { params, response }
+
+    return scoped(hull, user).post('firehose/traits', traits).then(
+      (response) => {
+        return { traits }
       },
-      error => {
-        error.params = params;
+      (error) => {
+        error.params = traits;
         throw error
       }
     );
@@ -75,9 +75,9 @@ export default function handleIdentify(payload, { hull, ship, measure, log }) {
     const updating = updateUser(hull, user);
 
     updating.then(
-      ({ params }) => {
+      ({ traits }) => {
         measure('request.identify.updateUser');
-        log('identify.success', params);
+        log('identify.success', traits);
       },
       error => {
         measure('request.identify.updateUser.error');
