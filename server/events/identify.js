@@ -58,7 +58,7 @@ function updateUser(hull, user) {
 }
 
 export default function handleIdentify(payload, { hull, ship, measure, log }) {
-  const { context, traits, userId, anonymousId } = payload;
+  const { context, traits, userId, anonymousId, integrations } = payload;
   const user = reduce((traits || {}), (u, v, k) => {
     if (v == null) return u;
     if (include(TOP_LEVEL_FIELDS, k)) {
@@ -70,6 +70,11 @@ export default function handleIdentify(payload, { hull, ship, measure, log }) {
     }
     return u;
   }, { userId, anonymousId, properties: {}, traits: {} });
+
+  if(integrations.Hull && integrations.Hull.id===true){
+    user.hullId = user.userId;
+    delete user.userId;
+  }
 
   if (!isEmpty(user.traits) || !isEmpty(user.properties)) {
     const updating = updateUser(hull, user);

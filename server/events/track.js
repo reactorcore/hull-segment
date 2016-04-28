@@ -33,6 +33,10 @@ export default function handleTrack(payload, { hull, ship, measure, log }) {
     return p;
   }, {});
 
+  if(integrations.Hull && integrations.Hull.id===true){
+    payload.hullId = payload.userId;
+    delete payload.userId;
+  }
 
   const tracking = scoped(hull, payload).post('t', track);
 
