@@ -3,5 +3,12 @@ export default function(hull, user={}, context={}){
   if(!hullId && !userId && !anonymousId) {
     return hull;
   }
-  return hull.as({ id: hullId, external_id: userId, guest_id: anonymousId });
+  const as = {};
+
+  if (hullId){ as.id = hullId; }
+  if (userId){ as.external_id = userId; }
+  if (anonymousId){ as.guest_id = anonymousId; }
+
+
+  return hull.as(as);
 }

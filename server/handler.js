@@ -174,6 +174,10 @@ function processHandlers(handlers, { measure, log }) {
           })
         }
 
+        if (process.env.DEBUG){
+          log('Segment Message', {message, context});
+        }
+
         const processors = eventHandlers.map(fn => fn(message, context));
 
         Promise.all(processors).then((results) => {
