@@ -133,8 +133,8 @@ describe('Segment Ship', () => {
       const MockHull = function() {
         this.get = (id) => Promise.resolve({ id })
         this.as = () => this;
-        this.traits = (params) => {
-          putSpy(params);
+        this.post = (url, params) => {
+          putSpy(url, params);
           return Promise.resolve('');
         }
       }
@@ -142,7 +142,7 @@ describe('Segment Ship', () => {
           .expect(200)
           .expect({ message: 'thanks' })
           .end((err, res) => {
-            assert(putSpy.calledOnce)
+            assert(putSpy.withArgs('firehose/traits').calledOnce)
             done()
           })
     })
