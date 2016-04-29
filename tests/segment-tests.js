@@ -5,13 +5,34 @@ const sinon = require('sinon');
 const assert = require('assert');
 const jwt = require('jwt-simple');
 
+const API_RESPONSES = {
+  'default': {
+    settings: { 
+      handle_page: false,
+      handle_screen: false
+    }    
+  },
+  page: {
+    settings: { 
+      handle_page: true,
+      handle_screen: false
+    }    
+  },
+  screen: {
+    settings: { 
+      handle_page: false,
+      handle_screen: true
+    }    
+  }
+}
+
 const Mocks = {
   Hull() {
     this.get = (id, params)=> {
       if (id === 'not_found') {
         return Promise.reject(new Error('Not found'));
       } else {
-        return Promise.resolve({ id });
+        return Promise.resolve(API_RESPONSES.default);
       }
     }
     this.post = ()=> {
@@ -114,7 +135,7 @@ describe('Segment Ship', () => {
     it('call Hull.track on track event', (done) => {
       const postSpy = sinon.spy();
       const MockHull = function() {
-        this.get = (id) => Promise.resolve({ id })
+        this.get = (id) => Promise.resolve(API_RESPONSES.default)
         this.as = () => this;
         this.post = (path, params) => {
           postSpy(path, params.event);
@@ -134,7 +155,7 @@ describe('Segment Ship', () => {
     it('call Hull.track on page event', (done) => {
       const postSpy = sinon.spy();
       const MockHull = function() {
-        this.get = (id) => Promise.resolve({ id })
+        this.get = (id) => Promise.resolve(API_RESPONSES.page)
         this.as = () => {
           return this
         };
@@ -152,10 +173,32 @@ describe('Segment Ship', () => {
         })
     })
 
+    it('should not Hull.track on page event by default', (done) => {
+      const postSpy = sinon.spy();
+      const MockHull = function() {
+        this.get = (id) => Promise.resolve(API_RESPONSES.default)
+        this.as = () => {
+          return this
+        };
+        this.post = (path, params) => {
+          postSpy(path, params.event);
+          return Promise.resolve();
+        }
+      }
+      sendRequest({ body: page, query: config, Hull: MockHull })
+        .expect({ message: 'thanks' })
+        .expect(200)
+        .end((err, res) => {
+          assert.equal(postSpy.callCount, 0)
+          done()
+        })
+    })
+
+
     it('call Hull.track on screen event', (done) => {
       const postSpy = sinon.spy();
       const MockHull = function() {
-        this.get = (id) => Promise.resolve({ id })
+        this.get = (id) => Promise.resolve(API_RESPONSES.screen)
         this.as = () => this;
         this.post = (path, params) => {
           postSpy(path, params.event);
@@ -171,10 +214,31 @@ describe('Segment Ship', () => {
           })
     })    
 
+    it('should not Hull.track on screen event by default', (done) => {
+      const postSpy = sinon.spy();
+      const MockHull = function() {
+        this.get = (id) => Promise.resolve(API_RESPONSES.default)
+        this.as = () => {
+          return this
+        };
+        this.post = (path, params) => {
+          postSpy(path, params.event);
+          return Promise.resolve();
+        }
+      }
+      sendRequest({ body: screen, query: config, Hull: MockHull })
+        .expect({ message: 'thanks' })
+        .expect(200)
+        .end((err, res) => {
+          assert.equal(postSpy.callCount, 0)
+          done()
+        })
+    })
+
     it('call Hull.traits on identify event', (done) => {
       const putSpy = sinon.spy();
       const MockHull = function() {
-        this.get = (id) => Promise.resolve({ id })
+        this.get = (id) => Promise.resolve(API_RESPONSES.default)
         this.as = () => this;
         this.post = (url, params) => {
           putSpy(url, params);
@@ -195,7 +259,7 @@ describe('Segment Ship', () => {
     it('call measure collector', (done) => {
       const measure = sinon.spy();
       const MockHull = function() {
-        this.get = (id) => Promise.resolve({ id })
+        this.get = (id) => Promise.resolve(API_RESPONSES.default)
         this.as = () => this;
         this.post = (path, params) => {
           return Promise.resolve();
@@ -218,7 +282,7 @@ describe('Segment Ship', () => {
         console.warn('YOU SPYED ON MY LOGZ ?', {msg, data})
       });
       const MockHull = function() {
-        this.get = (id) => Promise.resolve({ id })
+        this.get = (id) => Promise.resolve(API_RESPONSES.default)
         this.as = () => this;
         this.post = (path, params) => {
           return Promise.resolve();
