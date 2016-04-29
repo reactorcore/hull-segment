@@ -175,7 +175,7 @@ function processHandlers(handlers, { measure, log }) {
         }
 
         if (process.env.DEBUG){
-          log('Segment Message', {message, context});
+          log('Segment Message', { message });
         }
 
         const processors = eventHandlers.map(fn => fn(message, context));
