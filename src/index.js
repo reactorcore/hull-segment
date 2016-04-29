@@ -27,18 +27,13 @@ function start(element, deployment, hull) {
   }
 
   function identify(me) {
-    if (window.analytics) {
-      if (me && me.id) {
-        const user = ['name', 'email', 'username'].reduce((u, k) => {
-          if (me[k] != null) {
-            u[k] = me[k];
-          }
-          return u;
-        }, {});
-        window.analytics.identify(me.id, user, getOptions());
-      } else {
-        window.analytics.reset();
-      }
+    if (window.analytics && me && me.id) {
+      const user = ['name', 'email', 'username'].reduce((u, k) => {
+        if (me[k] != null) {
+          u[k] = me[k];
+        }
+        return u;
+      }, {});
     }
   }
 
@@ -58,6 +53,9 @@ function start(element, deployment, hull) {
   Hull.on('hull.traits', traits);
   Hull.on('hull.user.*', identify);
   identify(hull.currentUser());
+  Hull.on('hull.user.logout', function(){
+    window.analytics && window.analytics.reset();
+  });
 }
 
 Hull.onEmbed(start);
