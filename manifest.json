@@ -2,6 +2,7 @@
   "name": "Segment",
   "description": "Receive Events from Segment, send updated data to Segment",
   "tags": ["incoming", "outgoing"],
+  "index":"ship.js",
   "picture": "picture.png",
   "ui": false,
   "admin" : "admin.html",
@@ -44,10 +45,24 @@
     {
       "name" : "handle_groups",
       "title" : "Handle Groups",
-      "description" : "Applies group attributes to as user traits, prefixed with group__",
+      "description" : "Applies group attributes to as user traits, prefixed with group/",
       "type" : "boolean",
       "default" : false,
       "format" : "hidden"
+    },
+    {
+      "name" : "handle_pages",
+      "title" : "Handle Pages",
+      "description" : "Store analytics.page() events. Since there can be quite a few of those, they're disabled by default",
+      "type" : "boolean",
+      "default" : false
+    },
+    {
+      "name" : "handle_screens",
+      "title" : "Handle Screens",
+      "description" : "Store analytics.screen() events. Since there can be quite a few of those, they're disabled by default",
+      "type" : "boolean",
+      "default" : false
     }
   ],
   "resources": [],

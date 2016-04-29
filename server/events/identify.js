@@ -1,4 +1,5 @@
 import { isEmpty, reduce, include } from 'lodash'
+import scoped from '../scope-hull-client';
 
 const TOP_LEVEL_FIELDS = [
   'name',
@@ -23,32 +24,31 @@ const ALIASED_FIELDS = {
 
 const IGNORED_TRAITS = [
   'id',
+  'external_id',
+  'guest_id',
   'uniqToken',
   'visitToken'
 ];
 
 function updateUser(hull, user) {
   try {
-    const { userId, anonymousId, properties, traits } = user;
-    let client = hull;
 
-    if (userId) {
-      let hullAs = { external_id: userId };
-      if (anonymousId) {
-        hullAs.guest_id = anonymousId;
-      }
-      client = hull.as(hullAs);
-    } else if (anonymousId) {
-      properties._bid = anonymousId;
-      properties.contact_email = properties.email;
-      delete properties.email;
+    const { userId, anonymousId, properties, traits={} } = user;
+    if (!userId && !anonymousId){ return false; }
+
+    if (traits.email){
+      //we enforce email unicity, so we never want to store email in the main email field
+      //because we don't know if the customer is enforcing unicity.
+      traits.contact_email = traits.email;
+      delete traits.email;
     }
 
-    const params = Object.assign({}, traits, properties);
-    return client.post('firehose/traits', params).then(
-      response => { return { params, response } },
-      error => {
-        error.params = params;
+    return scoped(hull, user).post('firehose/traits', traits).then(
+      (response) => {
+        return { traits }
+      },
+      (error) => {
+        error.params = traits;
         throw error
       }
     );
@@ -58,7 +58,7 @@ function updateUser(hull, user) {
 }
 
 export default function handleIdentify(payload, { hull, ship, measure, log }) {
-  const { context, traits, userId, anonymousId } = payload;
+  const { context, traits, userId, anonymousId, integrations } = payload;
   const user = reduce((traits || {}), (u, v, k) => {
     if (v == null) return u;
     if (include(TOP_LEVEL_FIELDS, k)) {
@@ -71,13 +71,18 @@ export default function handleIdentify(payload, { hull, ship, measure, log }) {
     return u;
   }, { userId, anonymousId, properties: {}, traits: {} });
 
+  if(integrations.Hull && integrations.Hull.id===true){
+    user.hullId = user.userId;
+    delete user.userId;
+  }
+
   if (!isEmpty(user.traits) || !isEmpty(user.properties)) {
     const updating = updateUser(hull, user);
 
     updating.then(
-      ({ params }) => {
+      ({ traits }) => {
         measure('request.identify.updateUser');
-        log('identify.success', params);
+        log('identify.success', traits);
       },
       error => {
         measure('request.identify.updateUser.error');

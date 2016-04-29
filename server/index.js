@@ -1,6 +1,5 @@
 import express from 'express';
 import path from 'path';
-import Hull, { NotifHandler } from 'hull';
 import devMode from './dev-mode';
 import SegmentHandler from './handler';
 import eventsHandlers from './events'
@@ -11,8 +10,9 @@ import updateUser from './update-user';
 const noop = function() {};
 
 
-export default function(options) {
+export default function(options={}) {
 
+  const { Hull } = options;
   const app = express();
 
   app.engine('html', require('ejs').renderFile);
@@ -69,7 +69,7 @@ export default function(options) {
     }
   });
 
-  app.post('/notify', NotifHandler({
+  app.post('/notify', Hull.NotifHandler({
     onSubscribe() {
       console.warn("Hello new subscriber !");
     },
@@ -80,7 +80,7 @@ export default function(options) {
   }));
 
   const segment = SegmentHandler({
-    Hull: options.Hull,
+    Hull,
     secret: options.secret,
     events: eventsHandlers,
     measure: options.measure || noop,

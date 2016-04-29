@@ -1,9 +1,10 @@
 import { reduce } from 'lodash';
+import scoped from '../scope-hull-client';
 
-export default function handleTrack(track, { hull, ship, measure, log }) {
-  const { context, anonymousId, event, properties, userId, originalTimestamp, sentAt, receivedAt } = track;
+export default function handleTrack(payload, { hull, ship, measure, log }) {
+  const { context, anonymousId, event, properties, userId, originalTimestamp, sentAt, receivedAt, integrations={} } = payload;
+
   const page = (context || {}).page || {};
-
 
   const created_at = originalTimestamp || sentAt || receivedAt;
 
@@ -14,7 +15,7 @@ export default function handleTrack(track, { hull, ship, measure, log }) {
     sId = [aId, sId].join('-');
   }
 
-  const payload = reduce({
+  const track = reduce({
     ip: context.ip || '0',
     _bid: aId,
     _sid: sId,
@@ -32,13 +33,16 @@ export default function handleTrack(track, { hull, ship, measure, log }) {
     return p;
   }, {});
 
-  const client = userId ? hull.as({ external_id: userId }) : hull;
+  if(integrations.Hull && integrations.Hull.id===true){
+    payload.hullId = payload.userId;
+    delete payload.userId;
+  }
 
-  const tracking = client.post('t', payload);
+  const tracking = scoped(hull, payload).post('t', track);
 
   tracking.then(
     ok => {
-      log('track.success', payload);
+      log('track.success', track);
     },
     error => {
       measure('request.track.error');

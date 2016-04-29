@@ -140,6 +140,7 @@ function processHandlers(handlers, { measure, log }) {
     try {
       const eventName = req.hull.message.type
       const eventHandlers = handlers[eventName];
+      console.log('Handling with', eventName)
       if (eventHandlers && eventHandlers.length > 0) {
         const context = {
           hull: req.hull.client,

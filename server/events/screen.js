@@ -1,1 +1,16 @@
-export default function handleScreen(screen, { hull, ship }) {}
+import track from './track';
+
+export default function handleScreen(payload={}, context) {
+  const { path, search, title } = payload.properties || {}
+  const screen = {
+    ...payload,
+    event: 'screen',
+    properties: {
+      path,
+      search,
+      title,
+      name: payload.name
+    }
+  }
+  track(screen, context);
+}
