@@ -1,6 +1,6 @@
 const request = require('supertest');
 const app = require('../server/index');
-const { track, identify } = require('./fixtures');
+const { track, identify, group, page, screen } = require('./fixtures');
 const sinon = require('sinon');
 const assert = require('assert');
 const jwt = require('jwt-simple');
@@ -37,7 +37,9 @@ describe('Segment Ship', () => {
   };
 
   function sendRequest({ query, body, headers, Hull, measure, log }) {
-    const client = request(app({ secret, Hull: Hull || Mocks.Hull, measure, log }));
+    const MockedHull = Hull || Mocks.Hull;
+    MockedHull.NotifHandler = () => { return () => {} };
+    const client = request(app({ secret, Hull: MockedHull, measure, log }));
     return client .post('/segment')
                   .query(query || config)
                   .set(headers || {})
@@ -115,7 +117,7 @@ describe('Segment Ship', () => {
         this.get = (id) => Promise.resolve({ id })
         this.as = () => this;
         this.post = (path, params) => {
-          postSpy(path, params);
+          postSpy(path, params.event);
           return Promise.resolve();
         }
       }
@@ -123,10 +125,51 @@ describe('Segment Ship', () => {
           .expect({ message: 'thanks' })
           .expect(200)
           .end((err, res) => {
-            assert(postSpy.withArgs('t').calledOnce)
+            assert(postSpy.withArgs('t', 'Viewed Checkout Step').calledOnce)
             done()
           })
     })
+
+
+    it('call Hull.track on page event', (done) => {
+      const postSpy = sinon.spy();
+      const MockHull = function() {
+        this.get = (id) => Promise.resolve({ id })
+        this.as = () => {
+          return this
+        };
+        this.post = (path, params) => {
+          postSpy(path, params.event);
+          return Promise.resolve();
+        }
+      }
+      sendRequest({ body: page, query: config, Hull: MockHull })
+        .expect({ message: 'thanks' })
+        .expect(200)
+        .end((err, res) => {
+          assert(postSpy.withArgs('t','page').calledOnce)
+          done()
+        })
+    })
+
+    it('call Hull.track on screen event', (done) => {
+      const postSpy = sinon.spy();
+      const MockHull = function() {
+        this.get = (id) => Promise.resolve({ id })
+        this.as = () => this;
+        this.post = (path, params) => {
+          postSpy(path, params.event);
+          return Promise.resolve();
+        }
+      }
+      sendRequest({ body: screen, query: config, Hull: MockHull })
+          .expect({ message: 'thanks' })
+          .expect(200)
+          .end((err, res) => {
+            assert(postSpy.withArgs('t', 'screen').calledOnce)
+            done()
+          })
+    })    
 
     it('call Hull.traits on identify event', (done) => {
       const putSpy = sinon.spy();

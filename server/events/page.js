@@ -2,6 +2,7 @@ import track from './track';
 
 export default function handlePage(payload={}, context) {
   const { path, search, title } = payload.properties || {}
+
   const page = {
     ...payload,
     event: 'page',
@@ -12,5 +13,6 @@ export default function handlePage(payload={}, context) {
       name: payload.name
     }
   }
+
   track(page, context);
 }

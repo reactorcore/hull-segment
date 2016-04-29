@@ -2,7 +2,7 @@ import { reduce } from 'lodash';
 import scoped from '../scope-hull-client';
 
 export default function handleTrack(payload, { hull, ship, measure, log }) {
-  const { context, anonymousId, event, properties, userId, originalTimestamp, sentAt, receivedAt } = payload;
+  const { context, anonymousId, event, properties, userId, originalTimestamp, sentAt, receivedAt, integrations={} } = payload;
 
   const page = (context || {}).page || {};
 
