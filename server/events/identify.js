@@ -1,21 +1,6 @@
 import { isEmpty, reduce, include } from 'lodash'
 import scoped from '../scope-hull-client';
 
-const TOP_LEVEL_FIELDS = [
-  'name',
-  'description',
-  'username',
-  'first_name',
-  'last_name',
-  'email',
-  'contact_email',
-  'image',
-  'picture',
-  'phone',
-  'address',
-  'created_at'
-];
-
 const ALIASED_FIELDS = {
   lastname: 'last_name',
   firstname: 'first_name',
@@ -61,9 +46,7 @@ export default function handleIdentify(payload, { hull, ship, measure, log }) {
   const { context, traits, userId, anonymousId, integrations } = payload;
   const user = reduce((traits || {}), (u, v, k) => {
     if (v == null) return u;
-    if (include(TOP_LEVEL_FIELDS, k)) {
-      u.traits[k] = v;
-    } else if (ALIASED_FIELDS[k.toLowerCase()]) {
+    if (ALIASED_FIELDS[k.toLowerCase()]) {
       u.traits[ALIASED_FIELDS[k.toLowerCase()]] = v;
     } else if (!include(IGNORED_TRAITS, k)) {
       u.traits[k] = v;
