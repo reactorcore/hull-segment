@@ -7,22 +7,22 @@ const jwt = require('jwt-simple');
 
 const API_RESPONSES = {
   'default': {
-    settings: { 
+    settings: {
       handle_page: false,
       handle_screen: false
-    }    
+    }
   },
   page: {
-    settings: { 
+    settings: {
       handle_page: true,
       handle_screen: false
-    }    
+    }
   },
   screen: {
-    settings: { 
+    settings: {
       handle_page: false,
       handle_screen: true
-    }    
+    }
   }
 }
 
@@ -212,7 +212,7 @@ describe('Segment Ship', () => {
             assert(postSpy.withArgs('t', 'screen').calledOnce)
             done()
           })
-    })    
+    })
 
     it('should not Hull.track on screen event by default', (done) => {
       const postSpy = sinon.spy();
@@ -236,20 +236,38 @@ describe('Segment Ship', () => {
     })
 
     it('call Hull.traits on identify event', (done) => {
-      const putSpy = sinon.spy();
+      const traits = {
+        id: '12',
+        visitToken: 'boom',
+        firstname: 'James',
+        lastname: 'Brown',
+        createdat: '2016-05-02T10:39:17.812Z',
+        email: 'james@brown.com',
+        coconuts: 32
+      };
+
+      const postSpy = sinon.spy();
       const MockHull = function() {
         this.get = (id) => Promise.resolve(API_RESPONSES.default)
         this.as = () => this;
         this.post = (url, params) => {
-          putSpy(url, params);
+          postSpy(url, params);
           return Promise.resolve('');
         }
       }
-      sendRequest({ body: identify, query: config, Hull: MockHull })
+
+      sendRequest({ body: { ...identify, traits }, query: config, Hull: MockHull })
           .expect(200)
           .expect({ message: 'thanks' })
           .end((err, res) => {
-            assert(putSpy.withArgs('firehose/traits').calledOnce)
+            const payload = {
+              first_name: 'James',
+              last_name: 'Brown',
+              created_at: '2016-05-02T10:39:17.812Z',
+              email: 'james@brown.com',
+              coconuts: 32
+            };
+            assert(postSpy.withArgs('firehose/traits', payload).calledOnce)
             done()
           })
     })
