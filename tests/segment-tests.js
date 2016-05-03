@@ -146,7 +146,7 @@ describe('Segment Ship', () => {
           .expect({ message: 'thanks' })
           .expect(200)
           .end((err, res) => {
-            assert(postSpy.withArgs('t', 'Viewed Checkout Step').calledOnce)
+            assert(postSpy.withArgs('firehose/track', 'Viewed Checkout Step').calledOnce)
             done()
           })
     })
@@ -168,7 +168,7 @@ describe('Segment Ship', () => {
         .expect({ message: 'thanks' })
         .expect(200)
         .end((err, res) => {
-          assert(postSpy.withArgs('t','page').calledOnce)
+          assert(postSpy.withArgs('firehose/track','page').calledOnce)
           done()
         })
     })
@@ -209,7 +209,7 @@ describe('Segment Ship', () => {
           .expect({ message: 'thanks' })
           .expect(200)
           .end((err, res) => {
-            assert(postSpy.withArgs('t', 'screen').calledOnce)
+            assert(postSpy.withArgs('firehose/track', 'screen').calledOnce)
             done()
           })
     })
