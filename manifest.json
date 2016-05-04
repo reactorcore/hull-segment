@@ -25,9 +25,21 @@
   "private_settings": [
     {
       "name": "synchronized_properties",
-      "title": "Properties sent back to segment",
+      "title": "Properties sent back to Segment.com",
+      "description": "Send those user properties to Segment.com. Sends nothing if empty.",
       "type": "array",
-      "format": "table",
+      "format": "trait",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    {
+      "name": "synchronized_segments",
+      "title": "Filter users",
+      "description": "Only send users who match these segments to Segment.com. Keep empty to send everyone.",
+      "type": "array",
+      "format": "segment",
       "items": {
         "type": "string"
       },
