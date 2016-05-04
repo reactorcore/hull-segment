@@ -77,15 +77,15 @@ All other attributes from the `identify` call will be stored as [custom traits](
 
 ### Track
 
-Every `track` in Segment will create a new Event on Hull with `source:'segment'`.
+Every `track` in Segment will create a new Event on Hull with `"source":"segment"`.
 
 ### Screen
 
-Every `screen` in Segment will create a new Event on Hull with `source:'segment'` and `event:screen`.
+Every `screen` in Segment will create a new Event on Hull with `"source":"segment"` and `"event":"screen"`.
 
 ### Page
 
-Every `page` in Segment will create a new Event on Hull with `source:'segment'` and `event:page`.
+Every `page` in Segment will create a new Event on Hull with `"source":"segment"` and `"event":"page"`.
 
 ### Group
 
