@@ -26,7 +26,7 @@
     {
       "name": "synchronized_properties",
       "title": "Properties sent back to Segment.com",
-      "description": "Send those user properties to Segment.com",
+      "description": "Send those user properties to Segment.com. Sends nothing if empty.",
       "type": "array",
       "format": "trait",
       "items": {
@@ -37,7 +37,7 @@
     {
       "name": "synchronized_segments",
       "title": "Filter users",
-      "description": "Only send users who match these segments to Segment.com",
+      "description": "Only send users who match these segments to Segment.com. Keep empty to send everyone.",
       "type": "array",
       "format": "segment",
       "items": {

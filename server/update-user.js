@@ -39,7 +39,10 @@ export default function(Analytics) {
     const { synchronized_properties=[], synchronized_segments=[] } = ship.private_settings || {};
     const segment_ids = _.map(segments, 'id');
 
-    if (!_.intersection(segment_ids, synchronized_segments).length){
+    if (
+      synchronized_segments.length > 0 &&
+      !_.intersection(segment_ids, synchronized_segments).length
+      ){
       console.log(`Skip update for ${user.id} because not matching any segment`);
       return false;;
     };
@@ -65,7 +68,7 @@ export default function(Analytics) {
     };
 
 
-    if(synchronized_properties && synchronized_properties.length > 0) {
+    if(synchronized_properties.length > 0) {
       synchronized_properties.map((prop) => {
         traits[prop.replace(/^traits_/,'').replace('/','_')] = user[prop];
       });
