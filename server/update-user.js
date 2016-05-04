@@ -37,11 +37,20 @@ export default function(Analytics) {
   return function({ message }, { ship }) {
 
 
-    const { user={}, segments } = message;
+    const { user={}, segments={} } = message;
 
     if(!ship || !user || !user.id || !user.external_id) {
       return false;
     }
+
+    // Custom properties to be synchronized
+    const { synchronized_properties=[], synchronized_segments=[] } = ship.private_settings || {};
+    const segment_ids = _.map(segments, 'id');
+
+    if (!_.intersection(segment_ids, synchronized_segments).length){
+      console.log(`Skip update for ${user.id} because not matching any segment`);
+      return false;;
+    };
 
     const userId = user['external_id'];
     const groupId = user['traits_group/id'];
@@ -63,8 +72,6 @@ export default function(Analytics) {
       hull_segments: getKey(segments, 'name').join(",")
     };
 
-    // Custom properties to be synchronized
-    const { synchronized_properties=[] } = ship.private_settings || {};
 
     if(synchronized_properties && synchronized_properties.length > 0) {
       synchronized_properties.map((prop) => {
