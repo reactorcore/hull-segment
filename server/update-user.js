@@ -24,20 +24,12 @@ const ADDRESS_FIELDS = [
   'country'
 ];
 
-const getKey = function getKey(arr, k){
-  if(!arr || !arr.length){ return []}
-  return _.reduce(arr, function(m, s){
-    if(s && s[k]){ m.push(s[k]) }
-    return m;
-  }, []);
-}
-
 export default function(Analytics) {
 
   return function({ message }, { ship }) {
 
 
-    const { user={}, segments={} } = message;
+    const { user={}, segments=[] } = message;
 
     if(!ship || !user || !user.id || !user.external_id) {
       return false;
@@ -69,7 +61,7 @@ export default function(Analytics) {
     // Use hull_segments by default
 
     const traits = {
-      hull_segments: getKey(segments, 'name').join(",")
+      hull_segments: _.map(segments, 'name').join(",")
     };
 
 
