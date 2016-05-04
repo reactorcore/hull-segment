@@ -44,9 +44,11 @@ analytics.identify(userId, {
 
 The traits you list in the Ship's settings are sent back to Segment. This lets you send to other tools any trait that has been computed or collected from enrichment steps.
 
+Optionally, you can filter in the Segment ship which audiences will be sent back to segment. This makes it very usefult to only send a subset of all your users to a given tool.
+
 # Features
 
-Hull supports the `identify`, `track`, and `group` methods.
+Hull supports the `identify`, `page`, `screen`, `track`, and `group` methods.
 
 Hull stores customer properties and events and makes them available for segmentation in the Dashboard.
 
@@ -60,7 +62,6 @@ Every user identified on Segment with a `userId` will be created as a User on Hu
 The following traits will be stored as first level fields on the User object
 
 - address
-- contact_email
 - created_at
 - description
 - email
@@ -77,6 +78,14 @@ All other attributes from the `identify` call will be stored as [custom traits](
 ### Track
 
 Every `track` in Segment will create a new Event on Hull with `source:'segment'`.
+
+### Screen
+
+Every `screen` in Segment will create a new Event on Hull with `source:'segment'` and `event:screen`.
+
+### Page
+
+Every `page` in Segment will create a new Event on Hull with `source:'segment'` and `event:page`.
 
 ### Group
 
@@ -100,6 +109,6 @@ will add the following traits on all users that belong to the group :
 }
 ```
 
-_Note: Internally, we flatten objects and use '/' as a separator. They're really stored as `traits_group/name`. Our Libraries handle nesting for you when you receive data coming from Hull_
+Internally, we flatten objects and use '/' as a separator. They're really stored as `traits_group/name`. Our Libraries handle nesting for you when you receive data coming from Hull
 
 __Note: This feature is optional and not enabled by default. You should only enable it if your users can only belong to one group.__
