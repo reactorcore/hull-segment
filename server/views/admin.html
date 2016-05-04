@@ -7,12 +7,11 @@
     <div class=" mt-1 col-md-6 col-md-offset-3">
       <div class="panel panel-default">
         <div class="panel-heading">
-          <h4 class="panel-title">Segment → Hull Integration</h4>
+          <h3 class="panel-title text-center">Segment ↔ Hull</h3>
         </div>
-        <div class="panel-body">
-          <p>Enable the Hull Integration in Segment.</p>
-          <p>Copy the key below, open Segment > Integrations > Hull and paste the API key below</p>
-          <label for="apiKey"> Here is your apiKey </label>
+        <div class="panel-body text-center">
+          <p>Open <strong>Segment → Integrations → Hull</strong>
+          and paste the API key below</p>
           <div class="input-group">
             <input id="apiKey" type="text" class="form-control" value="<%= apiKey %>">
             <span class="input-group-addon">
@@ -21,17 +20,31 @@
               </a>
             </span>
           </div>
+          <fieldset  class="text-center mt-1 pt-05 mb-1">
+            <legend class="text-muted"><small>OR</small></legend>
+            <span id="segment-enable-button" target='segment'></span>
+          </fieldset>
         </div>
       </div>
-      <p>
-        Or click here to enable it directly &nbsp;
-        <span id="segment-enable-button" target='segment'></span>
-      </p>
-
     </div>
-
-
-
+    <style type="text/css" media="screen">
+      legend { 
+        border-bottom-color: #CED7E4;
+        height: 8px;
+      }
+      legend small {
+        background-color:white;
+        padding: 0 5px;
+        font-size: 13px;
+      }
+      .input-group-addon{
+        padding:0;
+      }
+      .input-group-addon .btn{
+        height: 40px;
+        padding-top:12px;
+      }
+    </style>
     <script src="//static.segment.com/enable-button/v1/index.js"></script>
     <script src="/clipboard.min.js"></script>
     <script>
