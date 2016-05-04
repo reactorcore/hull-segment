@@ -11,7 +11,7 @@ const PORT = process.env.PORT || 8082;
 
 const options = {
   Hull,
-  secret: process.env.SECRET,
+  secret: process.env.SECRET||'1234',
   devMode: process.env.NODE_ENV == 'development',
   measure: function() {}
 }
