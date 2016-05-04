@@ -34,7 +34,7 @@ If you enter your __Segment Write Key__ in the Ship's settings, then Hull will s
 
 ```js
 analytics.identify(userId, {
-  "hull_segments": "all matching segment names joined by a ','"
+  "hull_segments": ["all","matching","segment","names"],
   "custom_1": "value_1",
   "custom_2": "value_2",
 },{
@@ -42,9 +42,9 @@ analytics.identify(userId, {
 })
 ```
 
-The traits you list in the Ship's settings are sent back to Segment. This lets you send to other tools any trait that has been computed or collected from enrichment steps.
+In the Ship settings, you can choose which traits are sent to Segment.com. This lets you send any trait that has been computed or collected from enrichment steps to other tools.
 
-Optionally, you can filter in the Segment ship which audiences will be sent back to segment. This makes it very usefult to only send a subset of all your users to a given tool.
+You can also filter in the Ship Settings the customer segments will be sent back to Segment.com to those matching one or more of your Hull segments.
 
 # Features
 
