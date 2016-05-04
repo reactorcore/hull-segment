@@ -64,7 +64,7 @@ export default function(Analytics) {
     // Use hull_segments by default
 
     const traits = {
-      hull_segments: _.map(segments, 'name').join(",")
+      hull_segments: _.map(segments, 'name')
     };
 
 
