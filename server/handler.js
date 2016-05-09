@@ -138,21 +138,19 @@ function enrichWithHullClient(Hull) {
 function processHandlers(handlers, { measure, log }) {
   return function(req, res, next) {
     try {
+      const shipId = req.hull.ship.id;
       const eventName = req.hull.message.type
       const eventHandlers = handlers[eventName];
-      console.log('Handling with', eventName)
       if (eventHandlers && eventHandlers.length > 0) {
         const context = {
           hull: req.hull.client,
-          ship: req.hull.ship,
+          ship: shipId,
           measure(metric, value = 1) {
-            const shipId = req.hull.ship.id;
             console.warn('[measure]', `segment.${metric}`, value, { source: shipId })
             measure(`segment.${metric}`, value, { source: shipId });
           },
           log(msg, data) {
             try {
-              const shipId = req.hull.ship.id;
               let payload;
               if (data) {
                 payload = JSON.stringify(data)
@@ -175,7 +173,7 @@ function processHandlers(handlers, { measure, log }) {
         }
 
         if (process.env.DEBUG){
-          log('Segment Message', { message });
+          log(`[${shipId}] segment.message - `, JSON.stringify(message));
         }
 
         const processors = eventHandlers.map(fn => fn(message, context));
