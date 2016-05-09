@@ -21,13 +21,6 @@ function updateUser(hull, user) {
     const { userId, anonymousId, traits={} } = user;
     if (!userId && !anonymousId){ return false; }
 
-    if (!userId && traits.email) {
-      // we enforce email unicity, so we never want to store email in the main email field
-      // because we don't know if the customer is enforcing unicity.
-      traits.contact_email = traits.email;
-      delete traits.email;
-    }
-
     return scoped(hull, user).post('firehose/traits', traits).then(
       (response) => {
         return { traits }
