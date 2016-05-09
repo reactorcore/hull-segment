@@ -144,7 +144,7 @@ function processHandlers(handlers, { measure, log }) {
       if (eventHandlers && eventHandlers.length > 0) {
         const context = {
           hull: req.hull.client,
-          ship: shipId,
+          ship: req.hull.ship,
           measure(metric, value = 1) {
             console.warn('[measure]', `segment.${metric}`, value, { source: shipId })
             measure(`segment.${metric}`, value, { source: shipId });
