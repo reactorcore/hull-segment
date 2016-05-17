@@ -146,7 +146,7 @@ describe('Segment Ship', () => {
           .expect({ message: 'thanks' })
           .expect(200)
           .end((err, res) => {
-            assert(postSpy.withArgs('firehose/track', 'Viewed Checkout Step').calledOnce)
+            assert(postSpy.withArgs('t', 'Viewed Checkout Step').calledOnce)
             done()
           })
     })
@@ -168,7 +168,7 @@ describe('Segment Ship', () => {
         .expect({ message: 'thanks' })
         .expect(200)
         .end((err, res) => {
-          assert(postSpy.withArgs('firehose/track','page').calledOnce)
+          assert(postSpy.withArgs('t','page').calledOnce)
           done()
         })
     })
@@ -209,7 +209,7 @@ describe('Segment Ship', () => {
           .expect({ message: 'thanks' })
           .expect(200)
           .end((err, res) => {
-            assert(postSpy.withArgs('firehose/track', 'screen').calledOnce)
+            assert(postSpy.withArgs('t', 'screen').calledOnce)
             done()
           })
     })
@@ -246,12 +246,12 @@ describe('Segment Ship', () => {
         coconuts: 32
       };
 
-      const postSpy = sinon.spy();
+      const traitsSpy = sinon.spy();
       const MockHull = function() {
         this.get = (id) => Promise.resolve(API_RESPONSES.default)
         this.as = () => this;
-        this.post = (url, params) => {
-          postSpy(url, params);
+        this.traits = (url, params) => {
+          traitsSpy(url, params);
           return Promise.resolve('');
         }
       }
@@ -267,7 +267,7 @@ describe('Segment Ship', () => {
               email: 'james@brown.com',
               coconuts: 32
             };
-            assert(postSpy.withArgs('firehose/traits', payload).calledOnce)
+            assert(traitsSpy.withArgs(payload).calledOnce)
             done()
           })
     })
