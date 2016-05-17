@@ -38,7 +38,7 @@ export default function handleTrack(payload, { hull, ship, measure, log }) {
     delete payload.userId;
   }
 
-  const tracking = scoped(hull, payload).post('firehose/track', track);
+  const tracking = scoped(hull, payload).post('t', track);
 
   tracking.then(
     ok => {

@@ -21,7 +21,7 @@ function updateUser(hull, user) {
     const { userId, anonymousId, traits={} } = user;
     if (!userId && !anonymousId){ return false; }
 
-    return scoped(hull, user).post('firehose/traits', traits).then(
+    return scoped(hull, user).traits(traits).then(
       (response) => {
         return { traits }
       },
