@@ -75,13 +75,15 @@ export default function(Analytics) {
       });
     }
 
+
+    const integrations = {
+      Hull: false
+    };
+
     const context = {
       active: false,
       ip: 0,
-      integrations: {
-        Hull: false
-      }
-    }
+    };
 
     // Add group if available
     if (handle_groups && groupId) {
@@ -89,7 +91,7 @@ export default function(Analytics) {
     }
 
     console.warn(`[${ship.id}] segment.send.identify`, JSON.stringify({ userId, traits, context }));
-    const ret = analytics.identify({ userId, traits, context });
+    const ret = analytics.identify({ userId, traits, context, integrations });
 
     if (forward_events && events && events.length > 0) {
       events.map(e => {
@@ -100,9 +102,9 @@ export default function(Analytics) {
           event: e.event,
           properties: e.properties,
           timestamp: new Date(e.created_at),
+          integrations,
           context: {
             active: true,
-            integrations: { Hull: false },
             ip: ip,
             userAgent: useragent,
             page: {
