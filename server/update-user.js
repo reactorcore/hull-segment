@@ -27,16 +27,18 @@ const ADDRESS_FIELDS = [
 export default function(Analytics) {
 
   return function({ message }, { ship }) {
-
-
-    const { user={}, segments=[] } = message;
+    const { user={}, segments=[], events=[] } = message;
 
     if(!ship || !user || !user.id || !user.external_id) {
       return false;
     }
 
     // Custom properties to be synchronized
-    const { synchronized_properties=[], synchronized_segments=[] } = ship.private_settings || {};
+    const {
+      synchronized_properties=[],
+      synchronized_segments=[],
+      forward_events
+    } = ship.private_settings || {};
     const segment_ids = _.map(segments, 'id');
 
     if (
@@ -49,7 +51,6 @@ export default function(Analytics) {
 
     const userId = user['external_id'];
     const groupId = user['traits_group/id'];
-
 
     // Configure Analytics.js with write key
     // Ignore if write_key is not present
@@ -87,9 +88,36 @@ export default function(Analytics) {
       context.groupId = groupId;
     }
 
+    console.warn(`[${ship.id}] segment.send.identify`, JSON.stringify({ userId, traits, context }));
     const ret = analytics.identify({ userId, traits, context });
 
-    console.warn(`[${ship.id}] segment.send.identify`, JSON.stringify({ userId, traits, context }));
+    if (forward_events && events && events.length > 0) {
+      events.map(e => {
+        const { page={}, referrer={}, os={}, useragent, ip = 0 } = e.context || {};
+        const track = {
+          userId,
+          anonymousId: e.anonymous_id,
+          event: e.event,
+          properties: e.properties,
+          timestamp: new Date(e.created_at),
+          context: {
+            active: true,
+            integrations: { Hull: false },
+            ip: ip,
+            userAgent: useragent,
+            page: {
+              url: page.url
+            },
+            referrer: {
+              url: referrer.url
+            },
+            os: os
+          }
+        };
+        console.warn(`[${ship.id}] segment.send.track`, JSON.stringify(track));
+        analytics.track(track);
+      })
+    }
 
     return ret;
   }

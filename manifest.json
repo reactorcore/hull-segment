@@ -44,6 +44,13 @@
         "type": "string"
       },
       "default": []
+    },
+    {
+      "name" : "forward_events",
+      "title" : "Forward Events",
+      "description" : "Also forward events. Use only if your segment source and destination are different.",
+      "type" : "boolean",
+      "default" : false
     }
   ],
   "settings": [
