@@ -8,20 +8,20 @@ const jwt = require('jwt-simple');
 const API_RESPONSES = {
   'default': {
     settings: {
-      handle_page: false,
-      handle_screen: false
+      handle_pages: false,
+      handle_screens: false
     }
   },
   page: {
     settings: {
-      handle_page: true,
-      handle_screen: false
+      handle_pages: true,
+      handle_screens: false
     }
   },
   screen: {
     settings: {
-      handle_page: false,
-      handle_screen: true
+      handle_pages: false,
+      handle_screens: true
     }
   }
 }
