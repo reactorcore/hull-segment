@@ -26,10 +26,36 @@ const ADDRESS_FIELDS = [
 
 export default function(Analytics) {
 
-  return function({ message }, { ship }) {
+  return function({ message={} }, { ship={} }) {
     const { user={}, segments=[], events=[] } = message;
 
-    if(!ship || !user || !user.id || !user.external_id) {
+    // Empty payload ?
+    if (!user.id || !ship.id) {
+      return false;
+    }
+
+    // Configure Analytics.js with write key
+    // Ignore if write_key is not present
+    const { write_key, handle_groups } = ship.settings || {};
+    if (!write_key) {
+      console.warn('No write_key for ship', ship.id);
+      return false;
+    }
+
+    const analytics = new Analytics(write_key);
+
+    let anonymousId;
+    if (events && events.length > 0 && events[0].anonymous_id) {
+      anonymousId = events[0].anonymous_id;
+    } else if (user.anonymous_ids && user.anonymous_ids.length) {
+      anonymousId = _.last(user.anonymous_ids);
+    }
+
+    const userId = user.external_id;
+    const groupId = user['traits_group/id'];
+
+    if (!userId && !anonymousId) {
+      console.warn(`[${ship.id}] skip.user - no identifier`);
       return false;
     }
 
@@ -49,18 +75,6 @@ export default function(Analytics) {
       return false;;
     };
 
-    const userId = user['external_id'];
-    const groupId = user['traits_group/id'];
-
-    // Configure Analytics.js with write key
-    // Ignore if write_key is not present
-    const { write_key, handle_groups } = ship.settings || {};
-    if (!write_key) {
-      console.warn('No write_key for ship', ship.id);
-      return false;
-    }
-    const analytics = new Analytics(write_key);
-
     // Build traits that will be sent to Segment
     // Use hull_segments by default
 
@@ -74,7 +88,6 @@ export default function(Analytics) {
         traits[prop.replace(/^traits_/,'').replace('/','_')] = user[prop];
       });
     }
-
 
     const integrations = {
       Hull: false
@@ -91,7 +104,7 @@ export default function(Analytics) {
     }
 
     console.warn(`[${ship.id}] segment.send.identify`, JSON.stringify({ userId, traits, context }));
-    const ret = analytics.identify({ userId, traits, context, integrations });
+    const ret = analytics.identify({ anonymousId, userId, traits, context, integrations });
 
     if (forward_events && events && events.length > 0) {
       events.map(e => {
@@ -104,6 +117,7 @@ export default function(Analytics) {
           timestamp: new Date(e.created_at),
           integrations,
           context: {
+            groupId,
             active: true,
             ip: ip,
             userAgent: useragent,
