@@ -73,6 +73,9 @@ export default function(options={}) {
     onSubscribe() {
       console.warn("Hello new subscriber !");
     },
+    onError(err) {
+      console.warn("Error handling hull event", err, err && err.stack);
+    },
     groupTraits: false,
     events: {
       'user_report:update': updateUser(Analytics)
@@ -86,9 +89,7 @@ export default function(options={}) {
     measure: options.measure || noop,
     log: options.log || noop,
     onError(err) {
-      if (process.env.DEBUG) {
-        console.warn("Error handling segment event", err, err && err.stack);
-      }
+      console.warn("Error handling segment event", err, err && err.stack);
     }
   });
 
