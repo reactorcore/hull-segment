@@ -57,7 +57,7 @@ export default function(Analytics) {
     const { write_key, handle_groups } = ship.settings || {};
     if (!write_key) {
       console.warn('No write_key for ship', ship.id);
-      return Promise.reject(new Error("Missing credentials"));
+      return false;
     }
     const analytics = new Analytics(write_key);
 
