@@ -44,6 +44,9 @@ export default function(Analytics) {
 
     const analytics = new Analytics(write_key);
 
+    // Look for an anonymousId
+    // if we have events in the payload, we take the annymousId of the first event
+    // Otherwise, we look for known anonymousIds attached to the user and we take the last one
     let anonymousId;
     if (events && events.length > 0 && events[0].anonymous_id) {
       anonymousId = events[0].anonymous_id;
@@ -54,6 +57,7 @@ export default function(Analytics) {
     const userId = user.external_id;
     const groupId = user['traits_group/id'];
 
+    // We have no identifier for the user, we have to skip
     if (!userId && !anonymousId) {
       console.warn(`[${ship.id}] skip.user - no identifier`);
       return false;
