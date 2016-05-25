@@ -62,14 +62,6 @@
       "format": "text"
     },
     {
-      "name" : "handle_groups",
-      "title" : "Handle Groups",
-      "description" : "Applies group attributes to as user traits, prefixed with group/",
-      "type" : "boolean",
-      "default" : false,
-      "format" : "hidden"
-    },
-    {
       "name" : "handle_pages",
       "title" : "Handle Pages",
       "description" : "Store analytics.page() events. Since there can be quite a few of those, they're disabled by default",
@@ -82,7 +74,24 @@
       "description" : "Store analytics.screen() events. Since there can be quite a few of those, they're disabled by default",
       "type" : "boolean",
       "default" : false
-    }
+    },
+    {
+      "name" : "public_id_field",
+      "title" : "Public ID Field",
+      "description" : "User field to use as the userId field for data sent to segment",
+      "type" : "string",
+      "enum" : [ "id", "external_id" ],
+      "default" : "external_id",
+      "format" : "hidden"
+    },
+    {
+      "name" : "handle_groups",
+      "title" : "Handle Groups",
+      "description" : "Applies group attributes to as user traits, prefixed with group/",
+      "type" : "boolean",
+      "default" : false,
+      "format" : "hidden"
+    },
   ],
   "resources": [],
   "subscriptions" : [ { "url" : "/notify" } ]

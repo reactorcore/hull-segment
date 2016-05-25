@@ -36,7 +36,7 @@ export default function(Analytics) {
 
     // Configure Analytics.js with write key
     // Ignore if write_key is not present
-    const { write_key, handle_groups } = ship.settings || {};
+    const { write_key, handle_groups, public_id_field } = ship.settings || {};
     if (!write_key) {
       console.warn('No write_key for ship', ship.id);
       return false;
@@ -54,7 +54,9 @@ export default function(Analytics) {
       anonymousId = _.first(user.anonymous_ids);
     }
 
-    const userId = user.external_id;
+    const publicIdField = public_id_field === 'id' ? 'id' : 'external_id';
+
+    const userId = user[publicIdField];
     const groupId = user['traits_group/id'];
 
     // We have no identifier for the user, we have to skip
@@ -85,7 +87,6 @@ export default function(Analytics) {
     const traits = {
       hull_segments: _.map(segments, 'name')
     };
-
 
     if(synchronized_properties.length > 0) {
       synchronized_properties.map((prop) => {
