@@ -26,10 +26,42 @@ const ADDRESS_FIELDS = [
 
 export default function(Analytics) {
 
-  return function({ message }, { ship }) {
+  return function({ message={} }, { ship={} }) {
     const { user={}, segments=[], events=[] } = message;
 
-    if(!ship || !user || !user.id || !user.external_id) {
+    // Empty payload ?
+    if (!user.id || !ship.id) {
+      return false;
+    }
+
+    // Configure Analytics.js with write key
+    // Ignore if write_key is not present
+    const { write_key, handle_groups, public_id_field } = ship.settings || {};
+    if (!write_key) {
+      console.warn('No write_key for ship', ship.id);
+      return false;
+    }
+
+    const analytics = new Analytics(write_key);
+
+    // Look for an anonymousId
+    // if we have events in the payload, we take the annymousId of the first event
+    // Otherwise, we look for known anonymousIds attached to the user and we take the last one
+    let anonymousId;
+    if (events && events.length > 0 && events[0].anonymous_id) {
+      anonymousId = events[0].anonymous_id;
+    } else if (user.anonymous_ids && user.anonymous_ids.length) {
+      anonymousId = _.first(user.anonymous_ids);
+    }
+
+    const publicIdField = public_id_field === 'id' ? 'id' : 'external_id';
+
+    const userId = user[publicIdField];
+    const groupId = user['traits_group/id'];
+
+    // We have no identifier for the user, we have to skip
+    if (!userId && !anonymousId) {
+      console.warn(`[${ship.id}] skip.user - no identifier`);
       return false;
     }
 
@@ -49,18 +81,6 @@ export default function(Analytics) {
       return false;;
     };
 
-    const userId = user['external_id'];
-    const groupId = user['traits_group/id'];
-
-    // Configure Analytics.js with write key
-    // Ignore if write_key is not present
-    const { write_key, handle_groups } = ship.settings || {};
-    if (!write_key) {
-      console.warn('No write_key for ship', ship.id);
-      return false;
-    }
-    const analytics = new Analytics(write_key);
-
     // Build traits that will be sent to Segment
     // Use hull_segments by default
 
@@ -68,13 +88,11 @@ export default function(Analytics) {
       hull_segments: _.map(segments, 'name')
     };
 
-
     if(synchronized_properties.length > 0) {
       synchronized_properties.map((prop) => {
         traits[prop.replace(/^traits_/,'').replace('/','_')] = user[prop];
       });
     }
-
 
     const integrations = {
       Hull: false
@@ -91,7 +109,7 @@ export default function(Analytics) {
     }
 
     console.warn(`[${ship.id}] segment.send.identify`, JSON.stringify({ userId, traits, context }));
-    const ret = analytics.identify({ userId, traits, context, integrations });
+    const ret = analytics.identify({ anonymousId, userId, traits, context, integrations });
 
     if (forward_events && events && events.length > 0) {
       events.map(e => {
@@ -104,6 +122,7 @@ export default function(Analytics) {
           timestamp: new Date(e.created_at),
           integrations,
           context: {
+            groupId,
             active: true,
             ip: ip,
             userAgent: useragent,
