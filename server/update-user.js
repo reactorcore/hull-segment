@@ -51,7 +51,7 @@ export default function(Analytics) {
     if (events && events.length > 0 && events[0].anonymous_id) {
       anonymousId = events[0].anonymous_id;
     } else if (user.anonymous_ids && user.anonymous_ids.length) {
-      anonymousId = _.last(user.anonymous_ids);
+      anonymousId = _.first(user.anonymous_ids);
     }
 
     const userId = user.external_id;
