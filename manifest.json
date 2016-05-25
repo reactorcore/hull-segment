@@ -91,7 +91,7 @@
       "type" : "boolean",
       "default" : false,
       "format" : "hidden"
-    },
+    }
   ],
   "resources": [],
   "subscriptions" : [ { "url" : "/notify" } ]
