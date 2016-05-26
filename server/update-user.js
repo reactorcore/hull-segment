@@ -104,8 +104,20 @@ export default function(Analytics) {
     };
 
     // Add group if available
-    if (handle_groups && groupId) {
+    if (handle_groups && groupId && userId) {
       context.groupId = groupId;
+      const groupTraits = _.reduce(user, (group, value, key) => {
+        const mk = key.match(/^traits_group\/(.*)/);
+        const groupKey = mk && mk[1];
+        if (groupKey && groupKey !== 'id') {
+          group[groupKey] = value;
+        }
+        return group;
+      }, {});
+      if (!_.isEmpty(groupTraits)) {
+        console.warn(`[${ship.id}] segment.send.group`, JSON.stringify({ groupId, userId, traits: groupTraits, context }));
+        analytics.group({ groupId, anonymousId, userId, traits: groupTraits, context, integrations });
+      }
     }
 
     console.warn(`[${ship.id}] segment.send.identify`, JSON.stringify({ userId, traits, context }));
