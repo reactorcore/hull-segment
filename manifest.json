@@ -89,8 +89,7 @@
       "title" : "Handle Groups",
       "description" : "Applies group attributes to as user traits, prefixed with group/",
       "type" : "boolean",
-      "default" : false,
-      "format" : "hidden"
+      "default" : false
     }
   ],
   "resources": [],
