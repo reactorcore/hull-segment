@@ -1,265 +1,149 @@
-import connect from 'connect'
-import https from 'https'
-import _ from 'lodash'
-import rawBody from 'raw-body'
-import crypto from 'crypto'
-import jwt from 'jwt-simple'
+import connect from "connect";
+import _ from "lodash";
+import rawBody from "raw-body";
 
-function camelize(str, decapitalize) {
-  var ret = str.replace(/[-_\s]+(.)?/g, function(match, c) {
-    return c ? c.toUpperCase() : '';
+function camelize(str) {
+  const ret = str.replace(/[-_\s]+(.)?/g, (match, c) => (c ? c.toUpperCase() : ""));
+  return ret.charAt(0).toLowerCase() + ret.slice(1);
+}
+
+/*
+  Parses current request from Segment. Stores the token from req.headers into req.hull.token
+*/
+function authTokenMiddleware(req, res, next) {
+  console.log("authTOk");
+  req.hull = req.hull || {};
+  if (req.headers.authorization) {
+    const [authType, token64] = req.headers.authorization.split(" ");
+    if (authType === "Basic" && token64) {
+      try {
+        const token = new Buffer(token64, "base64").toString().split(":")[0];
+        req.hull.token = token;
+      } catch (err) {
+        const e = new Error("Invalid Token");
+        e.status = 401;
+        return next(e);
+      }
+    }
+  }
+  return next();
+}
+
+/*
+  Parses current request from Segment. Stores the message in req.segment.message;
+*/
+function parseRequest(req, res, next) {
+  console.log("parseRequest");
+  req.segment = req.segment || {};
+  rawBody(req, true, (err, body) => {
+    if (err) {
+      const e = new Error("Invalid Body");
+      e.status = 400;
+      return next(e);
+    }
+    try {
+      req.segment.body = body;
+      req.segment.message = JSON.parse(body);
+      return next();
+    } catch (parseError) {
+      const e = new Error("Invalid Body");
+      e.status = 400;
+      return next(e);
+    }
   });
-  return ret.charAt(0).toLowerCase() + ret.slice(1)
-};
-
-function parseRequest() {
-  return function(req, res, next) {
-    req.hull = req.hull || {};
-    rawBody(req, true, (err, body) => {
-      if (err) {
-        return res.handleError('Invalid body', 400);
-      }
-      try {
-        req.hull.body = body;
-        req.hull.message = JSON.parse(body);
-      } catch (parseError) {
-        return res.handleError('Invalid body', 400);
-      }
-      return next();
-    });
-  };
 }
 
-function verifyAuthToken(options) {
-  const { secret } = options;
-  return (req, res, next) => {
-    req.hull = req.hull || {};
-    if (req.headers['authorization'] && secret) {
-      const [ authType, token64 ] = req.headers['authorization'].split(' ');
-      if (authType === 'Basic' && token64) {
-        try {
-          const token = new Buffer(token64, 'base64').toString().split(":")[0]
-          req.hull.config = jwt.decode(token, secret);
-          next();
-        } catch (err) {
-          res.handleError('Invalid token', 401);
-        }
-      } else {
-        next()
-      }
-    } else {
-      next();
-    }
-  }
-}
-
-function verifySignature(options = {}) {
-  return (req, res, next) => {
-    if (req.headers['x-signature'] && options.secret) {
-      const signature = req.headers['x-signature'];
-
-      if (!signature) {
-        return res.handleError('Missing signature', 401);
-      }
-
-      const digest = crypto
-        .createHmac('sha1', options.secret)
-        .update(req.hull.body)
-        .digest('hex');
-
-      if (signature == digest) {
-        next();
-      } else {
-        return res.handleError('Invalid signature', 401);
-      }
-    } else {
-      return next();
-    }
-  }
-}
-
-function enrichWithHullClient(Hull) {
-  var _cache = [];
-
-  function getCurrentShip(shipId, client, forceUpdate) {
-    if (forceUpdate) _cache[shipId] = null;
-    _cache[shipId] = _cache[shipId] || client.get(shipId);
-    return _cache[shipId];
-  }
-
-  return (req, res, next) => {
+function processHandlers(handlers, Hull) {
+  return function processMiddleware(req, res, next) {
+    console.log("process");
     try {
-      const config = req.hull.config = req.hull.config || ['organization', 'ship', 'secret'].reduce((cfg, k)=> {
-        const val = (req.query[k] || "").trim();
-        if (typeof val === 'string') {
-          cfg[k] = val;
-        } else if (val && val[0] && typeof val[0] === 'string') {
-          cfg[k] = val[0].trim();
-        }
-        return cfg;
-      }, {});
+      const { client: hull, ship } = req.hull;
+      const { message } = req.segment;
 
-      req.hull = req.hull || {};
-
-      const { message } = req.hull;
-      let forceShipUpdate = false;
-      if (message && message.Subject === 'ship:update') {
-        forceShipUpdate = true;
-      }
-
-      if (config.organization && config.ship && config.secret) {
-        const client = req.hull.client = new Hull({
-          id: config.ship,
-          secret: config.secret,
-          organization: config.organization
-        });
-        getCurrentShip(config.ship, client, forceShipUpdate).then((ship) => {
-          req.hull.ship = ship;
-          next();
-        }, (err) => {
-          res.handleError(err.message, 401);
-        });
-      } else {
-        res.handleError("Missing credentials", 400);
-      }
-    } catch(err) {
-      try {
-        const { message, stack } = err || {};
-        res.handleError('Unknown Error: ' + err.message, 500);
-        console.warn('Unknown Error: ', { message, stack });
-      } catch(err2) {
-        res.handleError('Unknown Error: ' + err, 500);
-        console.warn('Unknown Error:', err2);
-      }
-    }
-  };
-}
-
-function processHandlers(handlers, { measure, log }) {
-  return function(req, res, next) {
-    try {
-      const shipId = req.hull.ship.id;
-      const eventName = req.hull.message.type
+      const eventName = message.type;
       const eventHandlers = handlers[eventName];
-      if (eventHandlers && eventHandlers.length > 0) {
-        const context = {
-          hull: req.hull.client,
-          ship: req.hull.ship,
-          measure(metric, value = 1) {
-            console.warn('[measure]', `segment.${metric}`, value, { source: shipId })
-            measure(`segment.${metric}`, value, { source: shipId });
-          },
-          log(msg, data) {
-            try {
-              let payload;
-              if (data) {
-                payload = JSON.stringify(data)
-              }
-              log(`[${shipId}] ${msg} - `, payload);
-            } catch(err) {
-              log('-- LOG ERRROR --', err);
-            }
-          }
-        };
 
-        const { message } = req.hull;
+      if (hull) {
+        hull.utils.debug("message", JSON.stringify(message));
+        hull.utils.metric(`request.${eventName}`, 1);
+      } else {
+        Hull.debug("message", JSON.stringify(message));
+        Hull.metric(`request.${eventName}`, 1);
+      }
+
+      if (eventHandlers && eventHandlers.length > 0) {
         if (message && message.integrations && message.integrations.Hull === false) {
           return next();
-        } else {
-          Object.keys(message).map(k => {
-            const camelK = camelize(k);
-            message[camelK] = message[camelK] || message[k];
-          })
         }
 
-        if (process.env.DEBUG){
-          log(`[${shipId}] segment.message - `, JSON.stringify(message));
-        }
+        Object.keys(message).map(k => {
+          const camelK = camelize(k);
+          message[camelK] = message[camelK] || message[k];
+          return k;
+        });
 
-        const processors = eventHandlers.map(fn => fn(message, context));
+        const processors = eventHandlers.map(fn => fn(message, { ship, hull }));
 
-        Promise.all(processors).then((results) => {
+        Promise.all(processors).then(() => {
           next();
         }, (err) => {
-          res.handleError(err.message, err.status || 500);
+          err.status = err.status || 500;
+          return next(err);
         });
       } else {
-        res.handleError('Not supported', 501);
+        const e = new Error("Not Supported");
+        e.status = 501;
+        return next(e);
       }
-    } catch ( err ) {
-      res.handleError(err.toString(), 500);
+      return next();
+    } catch (err) {
+      console.log(err);
+      err.status = err.status || 500;
+      return next(err);
     }
   };
-}
-
-
-function errorHandler(onError) {
-  return (req, res, next) => {
-    res.handleError = (message, status) => {
-      if (onError) onError(message, status);
-      res.status(status);
-      res.json({ message });
-    };
-    next();
-  };
-}
-
-
-function metricsHandler(options) {
-  return (req, res, next) => {
-    const eventName = req.hull.message.type;
-    const source = req.hull.config.ship;
-
-    if (eventName && source) {
-      options.measure(`segment.request.${eventName}`, 1, { source });
-    }
-
-    next();
-  }
 }
 
 
 module.exports = function SegmentHandler(options = {}) {
+  const app = connect();
+  const { Hull, hullClient, eventsHandlers = [], hostSecret = "" } = options;
+
   const _handlers = {};
   const _flushers = [];
-  const app = connect();
 
-  function addEventHandlers(eventsHash) {
-    _.map(eventsHash, (fn, eventName) => addEventHandler(eventName, fn));
-    return this;
-  }
 
-  function addEventHandler(eventName, fn) {
-    _handlers[eventName] = _handlers[eventName] || [];
-    _handlers[eventName].push(fn);
-    if (typeof fn.flush === 'function') {
+  _.map(eventsHandlers, (fn, event) => {
+    _handlers[event] = _handlers[event] || [];
+    _handlers[event].push(fn);
+    if (typeof fn.flush === "function") {
       _flushers.push(fn.flush);
     }
-
     return this;
-  }
+  });
 
-  if (options.events) {
-    addEventHandlers(options.events);
-  }
+  app.use(parseRequest); // parse segment request, early return if invalid.
+  app.use(authTokenMiddleware); // retreives Hull config and stores it in the right place.
+  app.use(hullClient({ hostSecret, fetchShip: true, cacheShip: true })); // builds hull Client
+  app.use(processHandlers(_handlers, Hull));
+  app.use((req, res) => {
+    res.json({ message: "thanks" });
+  });
 
-  app.use(errorHandler(options.onError));
-  app.use(parseRequest());
-  // app.use(verifySignature(options));
-  app.use(verifyAuthToken(options));
-  app.use(enrichWithHullClient(options.Hull));
-  app.use(processHandlers(_handlers, options));
-  app.use(metricsHandler(options));
-  app.use((req, res) => { res.json({ message: "thanks" }); });
+
+  app.use((err, req, res, next) => {
+    console.log("Error ----------------", err.message, err.status);
+    return res.status(err.status || 500).send({ message: err.message });
+  });
+
 
   function handler(req, res) {
     return app.handle(req, res);
   }
 
-  handler.addEventHandler = addEventHandler;
   handler.exit = () => {
     return Promise.all(_flushers.map((fn) => fn()));
-  }
+  };
 
   return handler;
 };

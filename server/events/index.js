@@ -1,9 +1,9 @@
-import track from './track'
-import group from './group'
-import alias from './alias'
-import page from './page'
-import screen from './screen'
-import identify from './identify'
+import track from "./track";
+import group from "./group";
+import alias from "./alias";
+import page from "./page";
+import screen from "./screen";
+import identify from "./identify";
 
 export default {
   track,
@@ -12,4 +12,4 @@ export default {
   page,
   screen,
   identify
-}
+};

@@ -1,101 +1,70 @@
-import express from 'express';
-import path from 'path';
-import devMode from './dev-mode';
-import SegmentHandler from './handler';
-import eventsHandlers from './events'
-import jwt from 'jwt-simple';
-import Analytics from 'analytics-node';
-import updateUser from './update-user';
+import express from "express";
+import path from "path";
+import devMode from "./dev-mode";
+import SegmentHandler from "./handler";
+import eventsHandlers from "./events";
+import jwt from "jwt-simple";
+import Analytics from "analytics-node";
+import updateUser from "./update-user";
+import ejs from "ejs";
 
-const noop = function() {};
+const noop = function noop() {};
 
-
-export default function(options={}) {
-
-  const { Hull } = options;
+module.exports = function server(options = {}) {
+  const { Hull, hostSecret } = options;
+  const { NotifHandler, Routes, Middlewares } = Hull;
+  const { hullClient } = Middlewares;
+  const { Readme, Manifest } = Routes;
   const app = express();
-
-  app.engine('html', require('ejs').renderFile);
-
-  app.set('views', __dirname + '/views');
 
   if (options.devMode) {
     app.use(devMode());
   }
 
-  app.use(express.static(path.resolve(__dirname, '..', 'dist')));
-  app.use(express.static(path.resolve(__dirname, '..', 'assets')));
 
-  app.get('/manifest.json', (req, res) => {
-    res.sendFile(path.resolve(__dirname, '..', 'manifest.json'));
+  app.engine("html", ejs.renderFile);
+  app.set("views", `${__dirname}/views`);
+  app.use(express.static(path.resolve(__dirname, "..", "dist")));
+  app.use(express.static(path.resolve(__dirname, "..", "assets")));
+
+  app.get("/manifest.json", Manifest(__dirname));
+  app.get("/", Readme);
+  app.get("/readme", Readme);
+
+  app.get("/admin.html", hullClient(Hull, { fetchShip: false }), (req, res) => {
+    const { config } = req.hull;
+    const apiKey = jwt.encode(config, hostSecret);
+    res.render("admin.html", { apiKey });
   });
 
-  app.get('/readme', (req,res) => {
-    res.redirect(`https://dashboard.hullapp.io/readme?url=https://${req.headers.host}`);
-  });
 
-  app.get('/apiKey', (req, res) => {
-    const { organization, secret, ship } = req.query;
-    const claims = { organization, secret, ship };
-    try {
-      const hull = new Hull({ id: ship, organization, secret });
-      hull.get(`${ship}/secret`).then((ss) => {
-        const apiKey = jwt.encode(claims, options.secret);
-        res.json({ apiKey });
-      }, (error) => {
-        res.status(401);
-        res.json({ message: 'Unauthorized' });
-      })
-    } catch(error) {
-      res.status(500);
-      res.json({ message: error.message });
-    }
-
-  });
-
-  app.get('/admin.html', (req, res) => {
-    const { organization, secret, ship } = req.query;
-    const claims = { organization, secret, ship };
-    try {
-      const hull = new Hull({ id: ship, organization, secret });
-      hull.get(`${ship}/secret`).then((ss) => {
-        const apiKey = jwt.encode(claims, options.secret);
-        res.render('admin.html', { apiKey });
-      }, (error) => {
-        res.render('error.html', { error })
-      })
-    } catch(error) {
-      res.render('error.html', { error })
-    }
-  });
-
-  app.post('/notify', Hull.NotifHandler({
-    onSubscribe() {
-      console.warn("Hello new subscriber !");
-    },
-    onError(err) {
-      console.warn("Error handling hull event", err, err && err.stack);
-    },
+  app.post("/notify", NotifHandler({
     groupTraits: false,
     events: {
-      'user_report:update': updateUser(Analytics)
+      "user:update": updateUser(Analytics)
     }
   }));
 
   const segment = SegmentHandler({
-    Hull,
-    secret: options.secret,
-    events: eventsHandlers,
-    measure: options.measure || noop,
-    log: options.log || noop,
     onError(err) {
       console.warn("Error handling segment event", err, err && err.stack);
-    }
+    },
+    hostSecret,
+    hullClient,
+    Hull,
+    eventsHandlers,
   });
 
-  app.post('/segment', segment);
+
+  app.post("/segment", segment);
+
+  // Error Handler
+  app.use((err, req, res, next) => {
+    console.log("Error ----------------", err.message, err.status);
+    return res.status(err.status || 500).send({ message: err.message });
+  });
 
   app.exit = () => segment.exit();
 
   return app;
-}
+};

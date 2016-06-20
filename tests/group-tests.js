@@ -1,7 +1,8 @@
-const _ = require('lodash');
-const GroupBatchHandler = require('../server/events/group').GroupBatchHandler;
-const assert = require('assert');
-const sinon = require('sinon');
+/* global describe, it */
+const _ = require("lodash");
+const GroupBatchHandler = require("../server/events/group").GroupBatchHandler;
+const assert = require("assert");
+const sinon = require("sinon");
 
 function makeGroupId(num) {
   return `groupId-${num || Math.round(Math.random() * 10 / 2)}`;
@@ -10,9 +11,9 @@ function makeGroupId(num) {
 function makeUser(user, groupIds) {
   const groupId = _.sample(groupIds || []) || makeGroupId();
   return Object.assign({
-    'id': _.uniqueId('userId-'),
-    'external_id':  _.uniqueId('externalId-'),
-    'traits_group/id':  groupId
+    id: _.uniqueId("userId-"),
+    external_id: _.uniqueId("externalId-"),
+    "traits_group/id": groupId
   }, user || {});
 }
 
@@ -25,7 +26,7 @@ const Mocks = {
 
     this.options = options;
 
-    this.post = (path, params={})=> {
+    this.post = (path, params = {})=> {
       try {
         const { page } = params;
         const result = {
@@ -46,38 +47,59 @@ const Mocks = {
     this.traits = (traits) => {
       return Promise.resolve({});
     }
+    this.utils = {
+      log: function(){},
+      metric: function(){},
+      debug: function(){}
+    }
   }
 }
 
-describe('GroupBatchHandler', () => {
-  const ship = { id: 'shipId' };
+const route = function(){ };
+const middleware = function(req, res, next){ next(); };
+
+const Routes = {
+  Readme() { return route; },
+  OAuth() { return route; },
+  Manifest() { return route; }
+};
+
+const Middlewares = {
+  hullClient() { return middleware; }
+};
+
+Mocks.Hull.Routes = Routes;
+Mocks.Hull.Middlewares = Middlewares;
+
+describe("GroupBatchHandler", () => {
+  const ship = { id: "shipId" };
   const users = makeUsers(10);
 
-  it('should make users', () => {
+  it("should make users", () => {
     assert(users.length === 10)
   });
 
-  it('GroupBatchHandler.add', (done) => {
+  it("GroupBatchHandler.add", (done) => {
     const hull = new Mocks.Hull();
     const handler = new GroupBatchHandler({ hull, ship });
     const groupId = makeGroupId(1);
-    const userId = _.uniqueId('externalId-');
+    const userId = _.uniqueId("externalId-");
 
-    handler.add({ userId, groupId, traits: { bim: 'bam' } }, { hull, ship });
-    handler.add({ userId, groupId, traits: { chick: 'chack' } }, { hull, ship });
-    handler.add({ userId, groupId, traits: { bim: 'boum' } }, { hull, ship });
-    handler.add({ userId: '123', groupId: makeGroupId(2), traits: { bim: 'boum' } }, { hull, ship });
+    handler.add({ userId, groupId, traits: { bim: "bam" } }, { hull, ship });
+    handler.add({ userId, groupId, traits: { chick: "chack" } }, { hull, ship });
+    handler.add({ userId, groupId, traits: { bim: "boum" } }, { hull, ship });
+    handler.add({ userId: "123", groupId: makeGroupId(2), traits: { bim: "boum" } }, { hull, ship });
 
     assert.deepEqual(Object.keys(handler.groups), [makeGroupId(1), makeGroupId(2)]);
 
     assert.deepEqual(handler.groups[groupId].userIds, [userId]);
 
-    assert.deepEqual(handler.groups[groupId].traits, { id: groupId, bim: 'boum', chick: 'chack' });
+    assert.deepEqual(handler.groups[groupId].traits, { id: groupId, bim: "boum", chick: "chack" });
 
     done();
   });
 
-  it('GroupBatchHandler.searchUsers', (done) => {
+  it("GroupBatchHandler.searchUsers", (done) => {
     const hull = new Mocks.Hull();
     hull.post = sinon.spy(hull.post);
 
@@ -88,7 +110,7 @@ describe('GroupBatchHandler', () => {
     }).then(done);
   });
 
-  it('GroupBatchHandler.getUsersByGroup', (done) => {
+  it("GroupBatchHandler.getUsersByGroup", (done) => {
     const hull = new Mocks.Hull();
     hull.post = sinon.spy(hull.post);
     const handler = new GroupBatchHandler({ hull, ship });
@@ -97,22 +119,22 @@ describe('GroupBatchHandler', () => {
       const group = groups[groupId];
       const userId = Object.keys(group)[0];
       const user = group[userId];
-      assert.deepEqual(user['external_id'], userId);
-      assert.deepEqual(user['traits_group/id'], groupId);
+      assert.deepEqual(user["external_id"], userId);
+      assert.deepEqual(user["traits_group/id"], groupId);
     }).then(done);
   });
 
-  it('GroupBatchHandler.flush', (done) => {
+  it("GroupBatchHandler.flush", (done) => {
     const hull = new Mocks.Hull({ makeUsers: 1, groupIds: [makeGroupId(1)] });
     hull.as = sinon.spy(hull.as);
     hull.traits = sinon.spy(hull.traits);
     const handler = new GroupBatchHandler({ hull, ship });
     const groupId = makeGroupId(1);
-    const userId = _.uniqueId('externalId-');
+    const userId = _.uniqueId("externalId-");
 
-    handler.add({ userId, groupId, traits: { bim: 'bam' } }, { hull, ship });
-    handler.add({ userId, groupId, traits: { chick: 'chack' } }, { hull, ship });
-    handler.add({ userId, groupId, traits: { bim: 'boum' } }, { hull, ship });
+    handler.add({ userId, groupId, traits: { bim: "bam" } }, { hull, ship });
+    handler.add({ userId, groupId, traits: { chick: "chack" } }, { hull, ship });
+    handler.add({ userId, groupId, traits: { bim: "boum" } }, { hull, ship });
 
 
     handler.flush().then((res) => {
@@ -127,8 +149,8 @@ describe('GroupBatchHandler', () => {
 
       assert(hull.as.calledWith(currentUser.as));
       assert(hull.as.calledWith(groupUser.as));
-      assert(hull.traits.calledWith({ 'group/id': groupId, 'group/bim' : 'boum', 'group/chick' : 'chack' }));
-      assert(hull.traits.calledWith({ 'group/bim' : 'boum', 'group/chick' : 'chack' }));
+      assert(hull.traits.calledWith({ "group/id": groupId, "group/bim" : "boum", "group/chick" : "chack" }));
+      assert(hull.traits.calledWith({ "group/bim" : "boum", "group/chick" : "chack" }));
       done();
     }, done);
 
