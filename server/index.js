@@ -8,11 +8,9 @@ import Analytics from "analytics-node";
 import updateUser from "./update-user";
 import ejs from "ejs";
 
-const noop = function noop() {};
-
 module.exports = function server(options = {}) {
   const { Hull, hostSecret } = options;
-  const { NotifHandler, Routes, Middlewares } = Hull;
+  const { BatchHandler, NotifHandler, Routes, Middlewares } = Hull;
   const { hullClient } = Middlewares;
   const { Readme, Manifest } = Routes;
   const app = express();
@@ -41,7 +39,13 @@ module.exports = function server(options = {}) {
   app.post("/notify", NotifHandler({
     groupTraits: false,
     handlers: {
-      "user:update": updateUser(Analytics)
+      "user:update": updateUser(Analytics),
+    }
+  }));
+  app.post("/batch", BatchHandler({
+    groupTraits: false,
+    handler: (notifications = [], context) => {
+      notifications.map(n => updateUser(n, context));
     }
   }));
 
@@ -54,7 +58,6 @@ module.exports = function server(options = {}) {
     Hull,
     handlers,
   });
-
 
   app.post("/segment", segment);
 
