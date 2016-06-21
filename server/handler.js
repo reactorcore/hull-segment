@@ -43,7 +43,8 @@ function verifyAuthToken(options) {
           req.hull.config = jwt.decode(token, secret);
           next();
         } catch (err) {
-          res.handleError(`Invalid token ${token} - ${err}`, 401);
+          console.warn(`InvalidTokenError: ${JSON.stringify({ token, err })}`);
+          res.handleError('Invalid token', 401);
         }
       } else {
         next()
