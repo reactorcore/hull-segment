@@ -135,9 +135,9 @@ export default function(Analytics) {
           integrations,
           context: {
             groupId,
-            active: true,
             ip,
             os,
+            active: true,
             userAgent: useragent,
             page: {
               url: page.url
@@ -147,7 +147,7 @@ export default function(Analytics) {
             }
           }
         };
-        hull.utils.log("send.track", track)
+        hull.utils.log("send.track", track);
         analytics.track(track);
       });
     }
