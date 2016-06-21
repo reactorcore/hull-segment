@@ -37,12 +37,13 @@ function verifyAuthToken(options) {
     if (req.headers['authorization'] && secret) {
       const [ authType, token64 ] = req.headers['authorization'].split(' ');
       if (authType === 'Basic' && token64) {
+        let token;
         try {
-          const token = new Buffer(token64, 'base64').toString().split(":")[0]
+          token = new Buffer(token64, 'base64').toString().split(":")[0]
           req.hull.config = jwt.decode(token, secret);
           next();
         } catch (err) {
-          res.handleError('Invalid token', 401);
+          res.handleError(`Invalid token ${token} - ${err}`, 401);
         }
       } else {
         next()
