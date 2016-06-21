@@ -45,7 +45,7 @@ module.exports = function server(options = {}) {
   app.post("/batch", BatchHandler({
     groupTraits: false,
     handler: (notifications = [], context) => {
-      notifications.map(n => updateUser(n, context));
+      notifications.map(n => updateUser(Analytics)(n, context));
     }
   }));
 
