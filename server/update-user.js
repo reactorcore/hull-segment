@@ -1,33 +1,16 @@
-import _ from 'lodash';
+import _ from "lodash";
 
 function camelize(str) {
   return str.replace (/(?:^|[-_])(\w)/g, function (_, c, i) {
     var s = i == 0 ? c : c.toUpperCase();
-    return c ? s : '';
+    return c ? s : "";
   });
 };
 
-const TOP_LEVEL_FIELDS = [
-  'name',
-  'username',
-  'first_name',
-  'last_name',
-  'phone',
-  'description'
-];
+export default function updateUserFactory(Analytics) {
 
-const ADDRESS_FIELDS = [
-  'street',
-  'city',
-  'postal_code',
-  'state',
-  'country'
-];
-
-export default function(Analytics) {
-
-  return function({ message={} }, { ship={} }) {
-    const { user={}, segments=[], events=[] } = message;
+  return function updateUser({ message = {} }, { ship = {}, hull = {} }) {
+    const { user = {}, segments = [], events = [] } = message;
 
     // Empty payload ?
     if (!user.id || !ship.id) {
@@ -38,7 +21,7 @@ export default function(Analytics) {
     // Ignore if write_key is not present
     const { write_key, handle_groups, public_id_field } = ship.settings || {};
     if (!write_key) {
-      console.warn('No write_key for ship', ship.id);
+      hull.utils.log("No write_key for ship");
       return false;
     }
 
@@ -54,43 +37,44 @@ export default function(Analytics) {
       anonymousId = _.first(user.anonymous_ids);
     }
 
-    const publicIdField = public_id_field === 'id' ? 'id' : 'external_id';
+    const publicIdField = public_id_field === "id" ? "id" : "external_id";
 
     const userId = user[publicIdField];
-    const groupId = user['traits_group/id'];
+    const groupId = user["traits_group/id"];
 
     // We have no identifier for the user, we have to skip
     if (!userId && !anonymousId) {
-      console.warn(`[${ship.id}] skip.user - no identifier`);
+      hull.utils.log("skip.user - no identifier");
       return false;
     }
 
     // Custom properties to be synchronized
     const {
-      synchronized_properties=[],
-      synchronized_segments=[],
+      synchronized_properties = [],
+      synchronized_segments = [],
       forward_events
     } = ship.private_settings || {};
-    const segment_ids = _.map(segments, 'id');
+    const segment_ids = _.map(segments, "id");
 
     if (
       synchronized_segments.length > 0 &&
       !_.intersection(segment_ids, synchronized_segments).length
-      ){
-      console.log(`Skip update for ${user.id} because not matching any segment`);
-      return false;;
-    };
+      ) {
+      hull.utils.log("skip.update for ${user.id} because not matching any segment");
+      return false;
+    }
 
     // Build traits that will be sent to Segment
     // Use hull_segments by default
 
     const traits = {
-      hull_segments: _.map(segments, 'name')
+      hull_segments: _.map(segments, "name")
     };
 
-    if(synchronized_properties.length > 0) {
+    if (synchronized_properties.length > 0) {
       synchronized_properties.map((prop) => {
-        traits[prop.replace(/^traits_/,'').replace('/','_')] = user[prop];
+        traits[prop.replace(/^traits_/, "").replace("/", "_")] = user[prop];
+        return true;
       });
     }
 
@@ -109,49 +93,60 @@ export default function(Analytics) {
       const groupTraits = _.reduce(user, (group, value, key) => {
         const mk = key.match(/^traits_group\/(.*)/);
         const groupKey = mk && mk[1];
-        if (groupKey && groupKey !== 'id') {
+        if (groupKey && groupKey !== "id") {
           group[groupKey] = value;
         }
         return group;
       }, {});
       if (!_.isEmpty(groupTraits)) {
-        console.warn(`[${ship.id}] segment.send.group`, JSON.stringify({ groupId, userId, traits: groupTraits, context }));
+        hull.utils.log("send.group", { groupId, userId, traits: groupTraits, context });
         analytics.group({ groupId, anonymousId, userId, traits: groupTraits, context, integrations });
       }
     }
 
-    console.warn(`[${ship.id}] segment.send.identify`, JSON.stringify({ userId, traits, context }));
+    hull.utils.log("send.identify", { userId, traits, context });
     const ret = analytics.identify({ anonymousId, userId, traits, context, integrations });
 
     if (forward_events && events && events.length > 0) {
       events.map(e => {
-        const { page={}, referrer={}, os={}, useragent, ip = 0 } = e.context || {};
-        const track = {
-          userId,
+        const { page = {}, referrer = {}, os = {}, useragent, ip = 0 } = e.context || {};
+        const { event, properties } = e;
+        const { name, category } = properties;
+        const type = (event === "page" || event === "screen") ? event : "track";
+        let track = {
           anonymousId: e.anonymous_id,
-          event: e.event,
-          properties: e.properties,
           timestamp: new Date(e.created_at),
+          userId,
+          properties,
           integrations,
           context: {
-            groupId,
-            active: true,
-            ip: ip,
+            ip, groupId, os,
             userAgent: useragent,
-            page: {
-              url: page.url
-            },
-            referrer: {
-              url: referrer.url
-            },
-            os: os
+            active: true,
           }
         };
-        console.warn(`[${ship.id}] segment.send.track`, JSON.stringify(track));
-        analytics.track(track);
-      })
-    }
 
+        if (type === "page") {
+          track = {
+            ...track,
+            name,
+            channel: "browser",
+            properties: {
+              referrer: referrer.url,
+              ...page,
+              ...e.properties
+            }
+          };
+          hull.utils.log("send.page", track);
+          analytics.page(track);
+        } else {
+          track = { ...track, event, category, properties, context: { ...track.context, page } };
+          hull.utils.log(`send.${type}`, track);
+          analytics.track(track);
+        }
+        return true;
+      });
+    }
     return ret;
-  }
+  };
 }
