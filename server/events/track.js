@@ -42,7 +42,7 @@ export default function handleTrack(payload, { hull }) {
 
   tracking.then(
     () => {
-      log("track.success", { ...context, event, properties });
+      log("track.success", { trackContext, event, properties });
     },
     error => {
       metric("request.track.error");
