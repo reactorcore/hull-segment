@@ -4,7 +4,9 @@ if (process.env.NEW_RELIC_LICENSE_KEY) {
   console.warn("Starting newrelic agent with key: ", process.env.NEW_RELIC_LICENSE_KEY);
   require("newrelic");
 }
-require("babel-register");
+require("babel-register")({
+  "presets": ["es2015"]
+});
 const Hull = require("hull");
 const Server = require("../server");
 const PORT = process.env.PORT || 8082;
@@ -50,7 +52,7 @@ if (process.env.LIBRATO_TOKEN && process.env.LIBRATO_USER) {
       if (librato) {
         metric = metric || "";
         ctx = ctx || {};
-        value = (value!==undefined) ? value : 1;
+        value = (value !== undefined) ? value : 1;
         librato.measure(`segment.${metric}`, value, Object.assign({}, { source: ctx.id }));
       }
     } catch (err) {
