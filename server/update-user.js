@@ -7,26 +7,9 @@ function camelize(str) {
   });
 };
 
-const TOP_LEVEL_FIELDS = [
-  "name",
-  "username",
-  "first_name",
-  "last_name",
-  "phone",
-  "description"
-];
+export default function updateUserFactory(Analytics) {
 
-const ADDRESS_FIELDS = [
-  "street",
-  "city",
-  "postal_code",
-  "state",
-  "country"
-];
-
-export default function(Analytics) {
-
-  return function({ message = {} }, { ship = {}, hull = {} }) {
+  return function updateUser({ message = {} }, { ship = {}, hull = {} }) {
     const { user = {}, segments = [], events = [] } = message;
 
     // Empty payload ?
@@ -38,7 +21,7 @@ export default function(Analytics) {
     // Ignore if write_key is not present
     const { write_key, handle_groups, public_id_field } = ship.settings || {};
     if (!write_key) {
-      hull.utils.log("No write_key for ship")
+      hull.utils.log("No write_key for ship");
       return false;
     }
 
@@ -90,7 +73,8 @@ export default function(Analytics) {
 
     if (synchronized_properties.length > 0) {
       synchronized_properties.map((prop) => {
-        return traits[prop.replace(/^traits_/, "").replace("/", "_")] = user[prop];
+        traits[prop.replace(/^traits_/, "").replace("/", "_")] = user[prop];
+        return true;
       });
     }
 
@@ -115,43 +99,54 @@ export default function(Analytics) {
         return group;
       }, {});
       if (!_.isEmpty(groupTraits)) {
-        hull.utils.log("send.group", { groupId, userId, traits: groupTraits, context })
+        hull.utils.log("send.group", { groupId, userId, traits: groupTraits, context });
         analytics.group({ groupId, anonymousId, userId, traits: groupTraits, context, integrations });
       }
     }
 
-    hull.utils.log("send.identify", { userId, traits, context })
+    hull.utils.log("send.identify", { userId, traits, context });
     const ret = analytics.identify({ anonymousId, userId, traits, context, integrations });
 
     if (forward_events && events && events.length > 0) {
       events.map(e => {
         const { page = {}, referrer = {}, os = {}, useragent, ip = 0 } = e.context || {};
-        const track = {
-          userId,
+        const { event, properties } = e;
+        const { name, category } = properties;
+        const type = (event === "page" || event === "screen") ? event : "track";
+        let track = {
           anonymousId: e.anonymous_id,
-          event: e.event,
-          properties: e.properties,
           timestamp: new Date(e.created_at),
+          userId,
+          properties,
           integrations,
           context: {
-            groupId,
-            ip,
-            os,
-            active: true,
+            ip, groupId, os,
             userAgent: useragent,
-            page: {
-              url: page.url
-            },
-            referrer: {
-              url: referrer.url
-            }
+            active: true,
           }
         };
-        hull.utils.log("send.track", track);
-        analytics.track(track);
+
+        if (type === "page") {
+          track = {
+            ...track,
+            name,
+            channel: "browser",
+            properties: {
+              referrer: referrer.url,
+              ...page,
+              ...e.properties
+            }
+          };
+          hull.utils.log("send.page", track);
+          analytics.page(track);
+        } else {
+          track = { ...track, event, category, properties, context: { ...track.context, page } };
+          hull.utils.log(`send.${type}`, track);
+          analytics.track(track);
+        }
+        return true;
       });
     }
-
     return ret;
-  }
+  };
 }
