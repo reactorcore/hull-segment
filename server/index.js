@@ -2,7 +2,7 @@ import express from "express";
 import path from "path";
 import devMode from "./dev-mode";
 import SegmentHandler from "./handler";
-import eventsHandlers from "./events";
+import handlers from "./events";
 import jwt from "jwt-simple";
 import Analytics from "analytics-node";
 import updateUser from "./update-user";
@@ -40,7 +40,7 @@ module.exports = function server(options = {}) {
 
   app.post("/notify", NotifHandler({
     groupTraits: false,
-    events: {
+    handlers: {
       "user:update": updateUser(Analytics)
     }
   }));
@@ -52,7 +52,7 @@ module.exports = function server(options = {}) {
     hostSecret,
     hullClient,
     Hull,
-    eventsHandlers,
+    handlers,
   });
 
 

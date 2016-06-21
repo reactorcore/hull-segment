@@ -11,7 +11,6 @@ function camelize(str) {
   Parses current request from Segment. Stores the token from req.headers into req.hull.token
 */
 function authTokenMiddleware(req, res, next) {
-  console.log("authTOk");
   req.hull = req.hull || {};
   if (req.headers.authorization) {
     const [authType, token64] = req.headers.authorization.split(" ");
@@ -33,7 +32,6 @@ function authTokenMiddleware(req, res, next) {
   Parses current request from Segment. Stores the message in req.segment.message;
 */
 function parseRequest(req, res, next) {
-  console.log("parseRequest");
   req.segment = req.segment || {};
   rawBody(req, true, (err, body) => {
     if (err) {
@@ -55,7 +53,6 @@ function parseRequest(req, res, next) {
 
 function processHandlers(handlers, Hull) {
   return function processMiddleware(req, res, next) {
-    console.log("process");
     try {
       const { client: hull, ship } = req.hull;
       const { message } = req.segment;
@@ -97,7 +94,6 @@ function processHandlers(handlers, Hull) {
       }
       return next();
     } catch (err) {
-      console.log(err);
       err.status = err.status || 500;
       return next(err);
     }
@@ -107,13 +103,13 @@ function processHandlers(handlers, Hull) {
 
 module.exports = function SegmentHandler(options = {}) {
   const app = connect();
-  const { Hull, hullClient, eventsHandlers = [], hostSecret = "" } = options;
+  const { Hull, hullClient, handlers = [], hostSecret = "" } = options;
 
   const _handlers = {};
   const _flushers = [];
 
 
-  _.map(eventsHandlers, (fn, event) => {
+  _.map(handlers, (fn, event) => {
     _handlers[event] = _handlers[event] || [];
     _handlers[event].push(fn);
     if (typeof fn.flush === "function") {
@@ -132,7 +128,7 @@ module.exports = function SegmentHandler(options = {}) {
 
 
   app.use((err, req, res, next) => {
-    console.log("Error ----------------", err.message, err.status);
+    console.log("Error ----------------", err.message, err.status, err.stack);
     return res.status(err.status || 500).send({ message: err.message });
   });
 

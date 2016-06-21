@@ -15,6 +15,12 @@ const options = {
   devMode: process.env.NODE_ENV === "development",
 };
 
+Hull.onLog(function (message, data, ctx) {
+  console.log("[" + ctx.id + "] segment." + message, JSON.stringify(data));
+});
+Hull.onMetric(function (metric, value, ctx) {
+  console.log("[" + ctx.id + "] segment." + metric, value);
+});
 if (process.env.LIBRATO_TOKEN && process.env.LIBRATO_USER) {
   var librato = require("librato-node");
   librato.configure({
@@ -39,7 +45,7 @@ if (process.env.LIBRATO_TOKEN && process.env.LIBRATO_USER) {
     }
   });
 
-  Hull.onMetric(function onMetricProduction(metric, value = 1, opts = {}) {
+  Hull.onMetric(function onMetricProduction(metric, value = 1, ctx = {}) {
     try {
       if (librato) {
         librato.measure(`segment.${metric}`, value, Object.assign({}, { source: opts.id }));
