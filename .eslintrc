@@ -1,14 +1,21 @@
 {
   "parser": "babel-eslint",
+  "globals": {},
   "env": {
-    "browser": true,
-    "node": true
+    "es6": true
   },
   "rules": {
-    "key-spacing": [0]
+    "comma-dangle": [0],
+    "max-len": [0],
+    "camelcase": [0],
     "quotes": [2, "double"],
-    "no-multi-spaces": [0],
-    "no-mixed-requires": [0],
-    "no-underscore-dangle": [0]
-  }
+    "prefer-arrow-callback": [0],
+    "new-cap": [0],
+    "no-underscore-dangle": [0],
+    "arrow-body-style" : [0],
+    "no-param-reassign" : [0],
+    "no-console": [0],
+    "eqeqeq": [1]
+  },
+  "extends": "airbnb-base"
 }

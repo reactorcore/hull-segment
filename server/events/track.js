@@ -1,31 +1,31 @@
-import { reduce } from 'lodash';
-import scoped from '../scope-hull-client';
+import { reduce } from "lodash";
+import scoped from "../scope-hull-client";
 
-export default function handleTrack(payload, { hull, ship, measure, log }) {
-  const { context, anonymousId, event, properties, userId, originalTimestamp, sentAt, receivedAt, integrations={} } = payload;
+export default function handleTrack(payload, { hull }) {
+  const { context, anonymousId, event, properties, userId, originalTimestamp, sentAt, receivedAt, integrations = {} } = payload;
+
+  const { metric, log } = hull.utils;
 
   const page = (context || {}).page || {};
 
   const created_at = originalTimestamp || sentAt || receivedAt;
 
   const aId = anonymousId || userId;
-  let sId = (created_at || new Date().toISOString()).substring(0,10);
+  let sId = (created_at || new Date().toISOString()).substring(0, 10);
 
   if (aId) {
-    sId = [aId, sId].join('-');
+    sId = [aId, sId].join("-");
   }
 
-  const track = reduce({
-    ip: context.ip || '0',
+  const trackContext = reduce({
+    ip: context.ip || "0",
     _bid: aId,
     _sid: sId,
-    event: event,
-    source: 'segment',
-    properties: properties || {},
+    created_at,
+    source: "segment",
     url: page.url,
     useragent: context.userAgent,
-    referrer: page.referrer,
-    created_at: created_at
+    referrer: page.referrer
   }, (p, v, k) => {
     if (v !== undefined) {
       p[k] = v;
@@ -33,20 +33,20 @@ export default function handleTrack(payload, { hull, ship, measure, log }) {
     return p;
   }, {});
 
-  if(integrations.Hull && integrations.Hull.id===true){
+  if (integrations.Hull && integrations.Hull.id === true) {
     payload.hullId = payload.userId;
     delete payload.userId;
   }
 
-  const tracking = scoped(hull, payload).post('t', track);
+  const tracking = scoped(hull, payload).track(event, properties, trackContext);
 
   tracking.then(
-    ok => {
-      log('track.success', track);
+    () => {
+      log("track.success", { ...context, event, properties });
     },
     error => {
-      measure('request.track.error');
-      log('track.error', { error });
+      metric("request.track.error");
+      log("track.error", { error });
     }
   );
 

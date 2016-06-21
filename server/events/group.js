@@ -9,24 +9,22 @@ const noop = function() {};
 
 export class GroupBatchHandler {
 
-  constructor({ hull, ship, measure, log }) {
+  constructor({ hull, ship }) {
     this.hull = hull;
     this.ship = ship;
-    this.measure = (metric, value) => {
-      if (typeof(measure) === 'function') {
-        measure(`request.group.${metric}`, value)
-      }
+    this.metric = (metric, value) => {
+      this.hull.utils.metric(`request.group.${metric}`, value)
     };
 
-    this.log = log || noop;
+    this.log = this.hull.utils.log;
     this.groups = {};
     this.status = 'idle';
     this.flushLater = throttle(this.flush.bind(this), BATCH_THROTTLE);
     this.stats = { flush: 0, add: 0, flushing: 0, success: 0, error: 0 };
   }
 
-  static handle(event, { hull, ship, measure, log }) {
-    const handler = BATCH_HANDLERS[ship.id] = BATCH_HANDLERS[ship.id] || new GroupBatchHandler({ hull, ship, measure, log });
+  static handle(event, { hull, ship }) {
+    const handler = BATCH_HANDLERS[ship.id] = BATCH_HANDLERS[ship.id] || new GroupBatchHandler({ hull, ship });
     handler.add(event, { hull, ship });
 
     if (Object.keys(handler.groups).length > MAX_BATCH_SIZE) {
@@ -69,7 +67,7 @@ export class GroupBatchHandler {
       include: ["id", "email", "external_id", "created_at", "traits_group/*"]
     };
 
-    const { hull, measure } = this;
+    const { hull, metric } = this;
 
     return new Promise((resolve, reject) => {
       const users = {};
@@ -78,7 +76,7 @@ export class GroupBatchHandler {
         const pageParams = Object.assign({}, params, { page });
         const startTime = new Date();
         return hull.post('search/user_reports', pageParams).then(({ data, pagination }) => {
-          measure('searchResponseTime', new Date() - startTime);
+          metric('searchResponseTime', new Date() - startTime);
           data.map(u => users[u.id] = u)
           if (pagination.page >= pagination.pages) {
             resolve(values(users));
@@ -117,7 +115,7 @@ export class GroupBatchHandler {
     }, {});
 
     if (!isEmpty(diff)) {
-      this.measure('updateUser');
+      this.metric('updateUser');
       return this.hull.as(user.id).traits(diff).then(() => {
         return { as: user.id, traits: diff };
       });
@@ -127,7 +125,7 @@ export class GroupBatchHandler {
   }
 
   flush() {
-    this.measure('flush');
+    this.metric('flush');
     this.stats.flush += 1;
     this.stats.flushing += 1;
     const groupIds = Object.keys(this.groups);
@@ -165,14 +163,14 @@ export class GroupBatchHandler {
 
 let exiting = false;
 
-function group(event, { hull, ship, measure }) {
+function group(event, { hull, ship }) {
   const { handle_groups } = ship.settings || {};
   if (exiting) {
     const err = new Error('Exiting...');
     err.status = 503;
     return Promise.reject(err);
   } else if (event && event.groupId && handle_groups === true) {
-    return GroupBatchHandler.handle(event, { hull, ship, measure });
+    return GroupBatchHandler.handle(event, { hull, ship });
   }
 }
 

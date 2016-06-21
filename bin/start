@@ -1,54 +1,65 @@
 #!/usr/bin/env node
 
 if (process.env.NEW_RELIC_LICENSE_KEY) {
-  console.warn('Starting newrelic agent with key: ', process.env.NEW_RELIC_LICENSE_KEY);
-  require('newrelic');
+  console.warn("Starting newrelic agent with key: ", process.env.NEW_RELIC_LICENSE_KEY);
+  require("newrelic");
 }
-require("babel/register");
-const Hull = require('hull');
-const Server = require('../server');
+require("babel-register");
+const Hull = require("hull");
+const Server = require("../server");
 const PORT = process.env.PORT || 8082;
 
 const options = {
   Hull,
-  secret: process.env.SECRET||'1234',
-  devMode: process.env.NODE_ENV == 'development',
-  measure: function() {}
-}
+  hostSecret: process.env.SECRET || "1234",
+  devMode: process.env.NODE_ENV === "development",
+};
 
+Hull.onLog(function (message, data, ctx) {
+  console.log("[" + ctx.id + "] segment." + message, JSON.stringify(data));
+});
+Hull.onMetric(function (metric, value, ctx) {
+  console.log("[" + ctx.id + "] segment." + metric, value);
+});
 if (process.env.LIBRATO_TOKEN && process.env.LIBRATO_USER) {
-  var librato = require('librato-node');
+  var librato = require("librato-node");
   librato.configure({
     email: process.env.LIBRATO_USER,
     token: process.env.LIBRATO_TOKEN
   });
-  librato.on('error', function(err) {
+  librato.on("error", function onError(err) {
     console.error(err);
   });
 
-  process.once('SIGINT', function() {
+  process.once("SIGINT", function onSigint() {
     librato.stop(); // stop optionally takes a callback
   });
   librato.start();
-  options.measure = function(metric, value, options) {
+
+  Hull.onLog(function onLog(message, data) {
     try {
-      librato && librato.measure(metric, value, options);
-    } catch(err) {
-      console.warn('error in librato.measure', err);
+      const payload = typeof(data) === "object" ? JSON.stringify(data) : data;
+      console.log(message, payload);
+    } catch (err) {
+      console.log(err);
     }
-  }
-}
+  });
 
-
-options.log = function(msg, data) {
-  const payload = typeof(data) === 'object' ? JSON.stringify(data) : data;
-  console.warn(msg, payload);
+  Hull.onMetric(function onMetricProduction(metric, value = 1, ctx = {}) {
+    try {
+      if (librato) {
+        librato.measure(`segment.${metric}`, value, Object.assign({}, { source: opts.id }));
+      }
+    } catch (err) {
+      console.warn("error in librato.measure", err);
+    }
+  });
 }
 
 const app = Server(options);
 
 function exitNow() {
-  console.warn('Exiting now !');
+  console.warn("Exiting now !");
   process.exit();
 }
 
@@ -59,8 +70,8 @@ function handleExit() {
 }
 
 
-process.on('SIGINT', handleExit);
-process.on('SIGTERM', handleExit);
+process.on("SIGINT", handleExit);
+process.on("SIGTERM", handleExit);
 
-console.log('Listening on port ' + PORT);
+console.log("Listening on port " + PORT);
 app.listen(PORT);

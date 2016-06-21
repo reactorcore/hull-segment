@@ -35,8 +35,9 @@ function updateUser(hull, user) {
   }
 }
 
-export default function handleIdentify(payload, { hull, ship, measure, log }) {
+export default function handleIdentify(payload, { hull, ship }) {
   const { context, traits, userId, anonymousId, integrations = {} } = payload;
+  const { metric, log } = hull.utils;
   const user = reduce((traits || {}), (u, v, k) => {
     if (v == null) return u;
     if (ALIASED_FIELDS[k.toLowerCase()]) {
@@ -57,11 +58,11 @@ export default function handleIdentify(payload, { hull, ship, measure, log }) {
 
     updating.then(
       ({ traits }) => {
-        measure('request.identify.updateUser');
+        metric('request.identify.updateUser');
         log('identify.success', traits);
       },
       error => {
-        measure('request.identify.updateUser.error');
+        metric('request.identify.updateUser.error');
         log('identify.error', { error });
       }
     );
