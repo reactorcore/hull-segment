@@ -128,7 +128,14 @@ module.exports = function SegmentHandler(options = {}) {
 
 
   app.use((err, req, res, next) => {
-    console.log("Error ----------------", err.message, err.status, err.stack);
+    Hull.log(err.message, JSON.stringify({
+      status: err.status,
+      segmentBody: req.segment,
+      method: req.method,
+      headers: req.headers,
+      url: req.url,
+      params: req.params
+    }));
     return res.status(err.status || 500).send({ message: err.message });
   });
 
