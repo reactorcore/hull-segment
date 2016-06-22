@@ -1,6 +1,6 @@
 /* global describe, it */
 const request = require("supertest");
-const app = require("../server/index");
+const app = require("../server/server");
 const { track, identify, group, page, screen } = require("./fixtures");
 const sinon = require("sinon");
 const assert = require("assert");
@@ -79,6 +79,7 @@ function sendRequest({ query, body, headers, metric = utils.metric, log = utils.
   MockHull.log = log;
   MockHull.debug = debug;
   MockHull.NotifHandler = () => { return () => {}; };
+  MockHull.BatchHandler = () => { return () => {}; };
 
   const client = request(app({ hostSecret, Hull: MockHull }));
   return client.post("/segment")
@@ -98,7 +99,10 @@ function mockHullFactory(postSpy, getResponse) {
       postSpy(path, params);
       return Promise.resolve();
     };
-    this.traits = this.post.bind(undefined, "me/traits");
+    this.traits = (traits) =>{
+      postSpy("me/traits", traits);
+      return Promise.resolve();
+    };
     this.track = (event, properties, context) => {
       postSpy("/t", event);
       return Promise.resolve();

@@ -1,4 +1,4 @@
-import { isEmpty, reduce, include } from 'lodash'
+import { isEmpty, reduce, includes } from 'lodash'
 import scoped from '../scope-hull-client';
 
 const ALIASED_FIELDS = {
@@ -42,7 +42,7 @@ export default function handleIdentify(payload, { hull, ship }) {
     if (v == null) return u;
     if (ALIASED_FIELDS[k.toLowerCase()]) {
       u.traits[ALIASED_FIELDS[k.toLowerCase()]] = v;
-    } else if (!include(IGNORED_TRAITS, k)) {
+    } else if (!includes(IGNORED_TRAITS, k)) {
       u.traits[k] = v;
     }
     return u;
@@ -52,7 +52,6 @@ export default function handleIdentify(payload, { hull, ship }) {
     user.hullId = user.userId;
     delete user.userId;
   }
-
   if (!isEmpty(user.traits)) {
     const updating = updateUser(hull, user);
 

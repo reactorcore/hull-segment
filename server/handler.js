@@ -125,19 +125,25 @@ module.exports = function SegmentHandler(options = {}) {
   app.use((req, res) => {
     res.json({ message: "thanks" });
   });
-
-
   app.use((err, req, res, next) => {
-    Hull.log(err.message, JSON.stringify({
-      status: err.status,
-      segmentBody: req.segment,
-      method: req.method,
-      headers: req.headers,
-      url: req.url,
-      params: req.params
-    }));
+    if (err) {
+      const data = {
+        status: err.status,
+        segmentBody: req.segment,
+        method: req.method,
+        headers: req.headers,
+        url: req.url,
+        params: req.params
+      };
+      if (err.status === 500){
+        data.stack = err.stack;
+      }
+      Hull.log(err.message, JSON.stringify(data));
+    }
     return res.status(err.status || 500).send({ message: err.message });
   });
+
+
 
 
   function handler(req, res) {

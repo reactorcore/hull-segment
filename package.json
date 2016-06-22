@@ -11,7 +11,7 @@
     "url": "https://github.com/hull"
   },
   "engines": {
-    "node": "5.11",
+    "node": "6.x",
     "npm": "3.x"
   },
   "repository": {
@@ -22,11 +22,26 @@
     "url": "https://github.com/hull-ships/hull-segment/issues"
   },
   "scripts": {
-    "start": "./bin/start",
-    "lint": "eslint src",
-    "build": "rimraf dist && NODE_ENV=production webpack --config ./webpack.config.js --progress --profile --colors",
-    "postinstall": "npm run build",
-    "test": "NODE_ENV=test mocha -R spec ./tests/index"
+
+    "build"        : "npm run clean && npm run build:server && npm run build:client",
+    "build:client" : "NODE_ENV=production ./node_modules/.bin/webpack --config ./webpack.config.js --progress --profile --colors",
+    "build:server" : "./node_modules/.bin/babel server -d lib",
+    "clean"        : "./node_modules/.bin/rimraf dist; ./node_modules/.bin/rimraf lib",
+
+    "start"        : "node ./lib",
+    "start:dev"    : "./node_modules/.bin/babel-node server",
+
+    "test"         : "npm run test:units",
+
+    "test:lint"    : "./node_modules/.bin/eslint server",
+    "test:modules" : "npm outdated --depth=0",
+    "test:units"   : "NODE_ENV=test ./node_modules/.bin/mocha -R spec ./tests/index",
+    "update"       : "updtr",
+
+    "watch"        : "watch 'clear && npm run lint -s && npm run test -s' src",
+    "watch:client" : "node ./scripts/client.js --watch",
+
+    "postinstall"  : "npm run build"
   },
   "keywords": [
     "hull",
@@ -58,6 +73,8 @@
     "webpack-dev-middleware": "^1.2.0"
   },
   "devDependencies": {
+    "babel-cli": "^6.10.1",
+    "babel-core": "^6.10.4",
     "babel-eslint": "^6.0.5",
     "babel-loader": "^6.2.4",
     "eslint": "^2.13.1",
