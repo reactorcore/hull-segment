@@ -7,7 +7,7 @@ import _ from "lodash";
 //   });
 // };
 
-export default function updateUserFactory(Analytics) {
+export default function updateUserFactory(analyticsClient) {
   return function updateUser({ message = {} }, { ship = {}, hull = {} }) {
     const { user = {}, segments = [], events = [] } = message;
 
@@ -24,7 +24,7 @@ export default function updateUserFactory(Analytics) {
       return false;
     }
 
-    const analytics = new Analytics(write_key);
+    const analytics = analyticsClient(write_key);
 
     // Look for an anonymousId
     // if we have events in the payload, we take the annymousId of the first event
@@ -54,7 +54,6 @@ export default function updateUserFactory(Analytics) {
       forward_events
     } = ship.private_settings || {};
     const segment_ids = _.map(segments, "id");
-
     if (
       synchronized_segments.length > 0 &&
       !_.intersection(segment_ids, synchronized_segments).length
@@ -108,9 +107,10 @@ export default function updateUserFactory(Analytics) {
 
     if (forward_events && events && events.length > 0) {
       events.map(e => {
-        const { page = {}, referrer = {}, os = {}, useragent, ip = 0 } = e.context || {};
+        const { location = {}, page = {}, referrer = {}, os = {}, useragent, ip = 0 } = e.context || {};
         const { event, properties } = e;
         const { name, category } = properties;
+        page.referrer = referrer.url;
         const type = (event === "page" || event === "screen") ? event : "track";
         let track = {
           anonymousId: e.anonymous_id,
@@ -119,27 +119,25 @@ export default function updateUserFactory(Analytics) {
           properties,
           integrations,
           context: {
-            ip, groupId, os,
+            ip, groupId, os, page, traits, location,
             userAgent: useragent,
             active: true,
           }
         };
 
         if (type === "page") {
+          const p = { ...page, ...properties };
           track = {
             ...track,
             name,
             channel: "browser",
-            properties: {
-              referrer: referrer.url,
-              ...page,
-              ...e.properties
-            }
+            properties: p
           };
+          track.context.page = p;
           hull.utils.log("send.page", track);
           analytics.page(track);
         } else {
-          track = { ...track, event, category, properties, context: { ...track.context, page } };
+          track = { ...track, event, category };
           hull.utils.log(`send.${type}`, track);
           analytics.track(track);
         }

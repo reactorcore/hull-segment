@@ -125,7 +125,7 @@ module.exports = function SegmentHandler(options = {}) {
   app.use((req, res) => {
     res.json({ message: "thanks" });
   });
-  app.use((err, req, res, next) => {
+  app.use((err, req, res, next) => {  // eslint-disable-line no-unused-vars
     if (err) {
       const data = {
         status: err.status,
@@ -145,7 +145,6 @@ module.exports = function SegmentHandler(options = {}) {
       we don't use next() but we need it in the params list
       because express detects a middleware with 4 args as an error callback
     */
-    if (false) { next(); }
     return res.status(err.status || 500).send({ message: err.message });
   });
 
