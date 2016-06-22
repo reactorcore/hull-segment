@@ -38,7 +38,7 @@ if (process.env.LIBRATO_TOKEN && process.env.LIBRATO_USER) {
   });
   librato.start();
 
-  Hull.onLog(function onLog(message, data, ctx = {}) {
+  Hull.onLog(function onLog(message, data = {}, ctx = {}) {
     try {
       const payload = typeof(data) === "object" ? JSON.stringify(data) : data;
       console.log(`[${ctx.id}] ${message}`, payload);
@@ -47,12 +47,9 @@ if (process.env.LIBRATO_TOKEN && process.env.LIBRATO_USER) {
     }
   });
 
-  Hull.onMetric(function onMetricProduction(metric, value, ctx) {
+  Hull.onMetric(function onMetricProduction(metric = "", value = 1, ctx = {}) {
     try {
       if (librato) {
-        metric = metric || "";
-        ctx = ctx || {};
-        value = (value !== undefined) ? value : 1;
         librato.measure(`segment.${metric}`, value, Object.assign({}, { source: ctx.id }));
       }
     } catch (err) {
