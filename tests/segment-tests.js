@@ -141,6 +141,13 @@ describe("Segment Ship", () => {
           .expect(200, done);
     });
 
+    it("should trim the token when passed with extra spaces", (done) => {
+      const token = jwt.encode(config, hostSecret);
+      sendRequest({ body: track, headers: { authorization: `Basic ${new Buffer(` ${token} `).toString("base64")}` } })
+          .expect({ message: "thanks" })
+          .expect(200, done);
+    });
+
     it("should return Invalid token with a token signed with an invalid signature", (done) => {
       const token = jwt.encode(config, `${hostSecret}invalid`);
       sendRequest({ body: track, headers: { authorization: `Basic ${new Buffer(token).toString("base64")}` } })
