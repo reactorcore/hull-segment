@@ -1,21 +1,20 @@
-import track from './track';
+import track from "./track";
 
-export default function handleScreen(payload={}, context={}) {
+export default function handleScreen(payload = {}, context = {}) {
+  const { ship = {} } = context;
+  const { handle_screens } = ship.settings || {};
+  if (!handle_screens) { return false; }
 
-  const { ship={} } = context;
-  const { handle_screens } = ship.settings || {}
-  if (!handle_screens) { return false }
-
-  const { path, search, title } = payload.properties || {}
+  const { path, search, title } = payload.properties || {};
   const screen = {
     ...payload,
-    event: 'screen',
+    event: "screen",
     properties: {
       path,
       search,
       title,
       name: payload.name
     }
-  }
-  track(screen, context);
+  };
+  return track(screen, context);
 }

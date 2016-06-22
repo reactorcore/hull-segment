@@ -1,10 +1,14 @@
+/* eslint global-require: 0 */
+
+import Hull from "hull";
+import Server from "./server";
+
+const PORT = process.env.PORT || 8082;
+
 if (process.env.NEW_RELIC_LICENSE_KEY) {
   console.warn("Starting newrelic agent with key: ", process.env.NEW_RELIC_LICENSE_KEY);
   require("newrelic");
 }
-const Hull = require("hull");
-const Server = require("./server");
-const PORT = process.env.PORT || 8082;
 
 const options = {
   Hull,
@@ -12,15 +16,15 @@ const options = {
   devMode: process.env.NODE_ENV === "development",
 };
 
-Hull.onLog(function (message, data, ctx) {
-  console.log('--------------')
-  console.log("[" + ctx.id + "] segment." + message, JSON.stringify(data));
+Hull.onLog(function onLog(message, data, ctx) {
+  console.log(`${ctx.id} ] segment.${message}`, JSON.stringify(data));
 });
-Hull.onMetric(function (metric, value, ctx) {
-  console.log("[" + ctx.id + "] segment." + metric, value);
+Hull.onMetric(function onMetric(metric, value, ctx) {
+  console.log(`${ctx.id} ] segment.${metric}`, value);
 });
+
 if (process.env.LIBRATO_TOKEN && process.env.LIBRATO_USER) {
-  var librato = require("librato-node");
+  const librato = require("librato-node");
   librato.configure({
     email: process.env.LIBRATO_USER,
     token: process.env.LIBRATO_TOKEN
@@ -73,5 +77,5 @@ function handleExit() {
 process.on("SIGINT", handleExit);
 process.on("SIGTERM", handleExit);
 
-console.log("Listening on port " + PORT);
+console.log(`Listening on port ${PORT}`);
 app.listen(PORT);

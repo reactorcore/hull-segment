@@ -1,12 +1,12 @@
-import webpackMiddleware from 'webpack-dev-middleware';
-import webpack from 'webpack';
-import webpackConfig from '../webpack.config.js';
+import webpackMiddleware from "webpack-dev-middleware";
+import webpack from "webpack";
+import webpackConfig from "../webpack.config.js";
 
 export default function devMode() {
   const compiler = webpack(webpackConfig);
   return webpackMiddleware(compiler, {
     publicPath: webpackConfig.output.publicPath,
-    contentBase: 'src',
+    contentBase: "src",
     stats: {
       colors: true,
       hash: false,

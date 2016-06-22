@@ -1,8 +1,8 @@
-const EMAIL_REGEXP = /([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})/i
+const EMAIL_REGEXP = /([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})/i;
 
-export default function(hull, user={}, context={}){
+export default function scope(hull, user = {} /* , context = {}*/) {
   const { hullId, userId, anonymousId, traits = {} } = user;
-  if(!hullId && !userId && !anonymousId) {
+  if (!hullId && !userId && !anonymousId) {
     return hull;
   }
   const as = {};

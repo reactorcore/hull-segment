@@ -1,14 +1,13 @@
 import _ from "lodash";
 
-function camelize(str) {
-  return str.replace (/(?:^|[-_])(\w)/g, function (_, c, i) {
-    var s = i == 0 ? c : c.toUpperCase();
-    return c ? s : "";
-  });
-};
+// function camelize(str) {
+//   return str.replace (/(?:^|[-_])(\w)/g, function (_, c, i) {
+//     var s = i == 0 ? c : c.toUpperCase();
+//     return c ? s : "";
+//   });
+// };
 
-export default function updateUserFactory(Analytics) {
-
+export default function updateUserFactory(analyticsClient) {
   return function updateUser({ message = {} }, { ship = {}, hull = {} }) {
     const { user = {}, segments = [], events = [] } = message;
 
@@ -25,7 +24,7 @@ export default function updateUserFactory(Analytics) {
       return false;
     }
 
-    const analytics = new Analytics(write_key);
+    const analytics = analyticsClient(write_key);
 
     // Look for an anonymousId
     // if we have events in the payload, we take the annymousId of the first event
@@ -55,7 +54,6 @@ export default function updateUserFactory(Analytics) {
       forward_events
     } = ship.private_settings || {};
     const segment_ids = _.map(segments, "id");
-
     if (
       synchronized_segments.length > 0 &&
       !_.intersection(segment_ids, synchronized_segments).length

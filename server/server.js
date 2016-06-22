@@ -4,7 +4,7 @@ import devMode from "./dev-mode";
 import SegmentHandler from "./handler";
 import handlers from "./events";
 import jwt from "jwt-simple";
-import Analytics from "analytics-node";
+import analyticsClientFactory from "./analytics-client";
 import updateUser from "./update-user";
 import ejs from "ejs";
 
@@ -35,17 +35,18 @@ module.exports = function server(options = {}) {
     res.render("admin.html", { apiKey });
   });
 
+  const analyticsClient = analyticsClientFactory();
 
   app.post("/notify", NotifHandler({
     groupTraits: false,
     handlers: {
-      "user:update": updateUser(Analytics),
+      "user:update": updateUser(analyticsClient),
     }
   }));
   app.post("/batch", BatchHandler({
     groupTraits: false,
     handler: (notifications = [], context) => {
-      notifications.map(n => updateUser(Analytics)(n, context));
+      notifications.map(n => updateUser(analyticsClient)(n, context));
     }
   }));
 
@@ -62,7 +63,7 @@ module.exports = function server(options = {}) {
   app.post("/segment", segment);
 
   // Error Handler
-  app.use((err, req, res, next) => {
+  app.use((err, req, res) => {
     console.log("Error ----------------", err.message, err.status);
     return res.status(err.status || 500).send({ message: err.message });
   });
