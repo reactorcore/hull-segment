@@ -22,7 +22,11 @@ End-Users: [See Readme here](https://dashboard.hullapp.io/readme?url=https://hul
 - Install
 
 ```sh
-npm install -g gulp
-npm install
-gulp
+npm i -g gulp
+npm i
+npm run start:dev #starts in dev mode with nodemon
+npm run test #runs unit tests, lints and checks dependencies
+npm run watch #builds client package
+npm run build # build
+# Checkout package.json for more tasks
 ```

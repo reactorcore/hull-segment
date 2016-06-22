@@ -22,26 +22,19 @@
     "url": "https://github.com/hull-ships/hull-segment/issues"
   },
   "scripts": {
-
-    "build"        : "npm run clean && npm run build:server && npm run build:client",
-    "build:client" : "NODE_ENV=production ./node_modules/.bin/webpack --config ./webpack.config.js --progress --profile --colors",
-    "build:server" : "./node_modules/.bin/babel server -d lib",
-    "clean"        : "./node_modules/.bin/rimraf dist; ./node_modules/.bin/rimraf lib",
-
-    "start"        : "node ./lib",
-    "start:dev"    : "./node_modules/.bin/babel-node server",
-
-    "test"         : "npm run test:units",
-
-    "test:lint"    : "./node_modules/.bin/eslint server",
-    "test:modules" : "npm outdated --depth=0",
-    "test:units"   : "NODE_ENV=test ./node_modules/.bin/mocha -R spec ./tests/index",
-    "update"       : "updtr",
-
-    "watch"        : "watch 'clear && npm run lint -s && npm run test -s' src",
-    "watch:client" : "node ./scripts/client.js --watch",
-
-    "postinstall"  : "npm run build"
+    "build": "npm run clean && npm run build:server && npm run build:client",
+    "build:client": "NODE_ENV=production ./node_modules/.bin/webpack --config ./webpack.config.js --progress --profile --colors",
+    "build:server": "./node_modules/.bin/babel server -d lib",
+    "clean": "./node_modules/.bin/rimraf dist; ./node_modules/.bin/rimraf lib",
+    "start": "node ./lib",
+    "start:dev": "./node_modules/.bin/nodemon --exec ./node_modules/.bin/babel-node -- server",
+    "test": "npm run test:lint && npm run test:units && npm run test:modules",
+    "test:lint": "./node_modules/.bin/eslint server",
+    "test:modules": "npm outdated --depth=0",
+    "test:units": "NODE_ENV=test ./node_modules/.bin/mocha -R spec ./tests/index",
+    "update": "./node_modules/.bin/updtr",
+    "watch": "./node_modules/.bin/watch 'clear && npm run test:lint -s && npm run test:units -s && npm run build:client -s' server src",
+    "postinstall": "npm run build"
   },
   "keywords": [
     "hull",
@@ -82,6 +75,8 @@
     "eslint-plugin-import": "^1.9.2",
     "mocha": "^2.5.3",
     "sinon": "^1.17.4",
-    "supertest": "^1.2.0"
+    "supertest": "^1.2.0",
+    "updtr": "^0.1.15",
+    "watch": "^0.19.1"
   }
 }
