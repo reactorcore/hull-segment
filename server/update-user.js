@@ -58,7 +58,7 @@ export default function updateUserFactory(analyticsClient) {
       synchronized_segments.length > 0 &&
       !_.intersection(segment_ids, synchronized_segments).length
       ) {
-      hull.utils.log("skip.update for ${user.id} because not matching any segment");
+      hull.utils.log(`skip.update for ${user.id} because not matching any segment`);
       return false;
     }
 

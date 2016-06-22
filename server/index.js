@@ -38,10 +38,10 @@ if (process.env.LIBRATO_TOKEN && process.env.LIBRATO_USER) {
   });
   librato.start();
 
-  Hull.onLog(function onLog(message, data) {
+  Hull.onLog(function onLog(message, data, ctx = {}) {
     try {
       const payload = typeof(data) === "object" ? JSON.stringify(data) : data;
-      console.log(message, payload);
+      console.log(`[${ctx.id}] ${message}`, payload);
     } catch (err) {
       console.log(err);
     }
