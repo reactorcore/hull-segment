@@ -21,7 +21,7 @@ module.exports = function server(options = {}) {
 
 
   app.engine("html", ejs.renderFile);
-  app.set("views", __dirname, "..", "views");
+  app.set("views", path.resolve(__dirname, "..", "views"));
   app.use(express.static(path.resolve(__dirname, "..", "dist")));
   app.use(express.static(path.resolve(__dirname, "..", "assets")));
 
