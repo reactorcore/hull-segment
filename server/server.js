@@ -62,7 +62,7 @@ module.exports = function server(options = {}) {
   app.post("/segment", segment);
 
   // Error Handler
-  app.use((err, req, res, next) => {
+  app.use((err, req, res) => {
     console.log("Error ----------------", err.message, err.status);
     return res.status(err.status || 500).send({ message: err.message });
   });

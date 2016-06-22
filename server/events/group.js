@@ -1,11 +1,9 @@
-import { reduce, isEmpty, values, map, throttle } from 'lodash'
-import Promise from 'bluebird';
+import { reduce, isEmpty, values, map, throttle } from "lodash";
+import Promise from "bluebird";
 
 const BATCH_HANDLERS = {};
 const MAX_BATCH_SIZE = parseInt(process.env.MAX_BATCH_SIZE || 100, 10);
 const BATCH_THROTTLE = parseInt(process.env.BATCH_THROTTLE || 5000, 10);
-
-const noop = function() {};
 
 export class GroupBatchHandler {
 
@@ -13,12 +11,12 @@ export class GroupBatchHandler {
     this.hull = hull;
     this.ship = ship;
     this.metric = (metric, value) => {
-      this.hull.utils.metric(`request.group.${metric}`, value)
+      this.hull.utils.metric(`request.group.${metric}`, value);
     };
 
     this.log = this.hull.utils.log;
     this.groups = {};
-    this.status = 'idle';
+    this.status = "idle";
     this.flushLater = throttle(this.flush.bind(this), BATCH_THROTTLE);
     this.stats = { flush: 0, add: 0, flushing: 0, success: 0, error: 0 };
   }
@@ -44,7 +42,7 @@ export class GroupBatchHandler {
     const group = this.groups[groupId] || { groupId, userIds: [], traits: {} };
     group.traits = Object.assign({}, group.traits || {}, traits, { id: groupId });
     if (userId && !group.userIds.includes(userId)) {
-      group.userIds.push(userId)
+      group.userIds.push(userId);
     }
 
     this.groups[groupId] = group;
@@ -58,7 +56,7 @@ export class GroupBatchHandler {
         filtered: {
           query: { match_all: {} },
           filter: {
-            terms: { 'traits_group/id' : groupIds }
+            terms: { "traits_group/id": groupIds }
           }
         }
       },
@@ -69,35 +67,38 @@ export class GroupBatchHandler {
 
     const { hull, metric } = this;
 
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve /* , reject*/) => {
       const users = {};
 
       (function fetch(page = 1) {
         const pageParams = Object.assign({}, params, { page });
         const startTime = new Date();
-        return hull.post('search/user_reports', pageParams).then(({ data, pagination }) => {
-          metric('searchResponseTime', new Date() - startTime);
-          data.map(u => users[u.id] = u)
+        return hull.post("search/user_reports", pageParams).then(({ data, pagination }) => {
+          metric("searchResponseTime", new Date() - startTime);
+          data.map(u => {
+            users[u.id] = u;
+            return u;
+          });
           if (pagination.page >= pagination.pages) {
             resolve(values(users));
           } else {
             fetch(page + 1);
           }
         });
-      })();
-    })
+      }());
+    });
   }
 
   getUsersByGroup(groupIds = []) {
     return this.searchUsers(groupIds).then(users => {
       return users.reduce((groups, user) => {
-        const groupId = user['traits_group/id'];
+        const groupId = user["traits_group/id"];
         groups[groupId] = groups[groupId] || {};
         if (user.external_id) {
           groups[groupId][user.external_id] = user;
         }
         return groups;
-      }, groupIds.reduce((g,i) => { g[i] = {}; return g }, {}));
+      }, groupIds.reduce((g, i) => { g[i] = {}; return g; }, {}));
     });
   }
 
@@ -108,43 +109,42 @@ export class GroupBatchHandler {
   updateUser(user, traits) {
     const diff = reduce(traits, (t, v, k) => {
       // drop nested properties
-      if (v !== user[`traits_group/${k}`] && typeof(v) !== 'object') {
+      if (v !== user[`traits_group/${k}`] && typeof(v) !== "object") {
         t[`group/${k}`] = v;
       }
       return t;
     }, {});
 
     if (!isEmpty(diff)) {
-      this.metric('updateUser');
+      this.metric("updateUser");
       return this.hull.as(user.id).traits(diff).then(() => {
         return { as: user.id, traits: diff };
       });
-    } else {
-      return Promise.resolve({ as: user.id });
     }
+    return Promise.resolve({ as: user.id });
   }
 
   flush() {
-    this.metric('flush');
+    this.metric("flush");
     this.stats.flush += 1;
     this.stats.flushing += 1;
     const groupIds = Object.keys(this.groups);
     const groups = this.groups;
     this.groups = {};
-    var ret = this.getUsersByGroup(groupIds).then((usersByGroup) => {
+    const ret = this.getUsersByGroup(groupIds).then((usersByGroup) => {
       return Promise.all(map(usersByGroup, (groupUsers, groupId) => {
         const { traits, userIds } = groups[groupId] || {};
         const currentUsers = (userIds || []).reduce((cids, id) => {
-          cids[id]  = { id: { external_id: id } };
+          cids[id] = { id: { external_id: id } };
           return cids;
         }, {});
 
         const users = values(Object.assign({}, currentUsers, groupUsers));
 
-        this.log('group.flush', { stats: this.stats, shipId: this.ship.id, groupId, users: users.length, traits });
+        this.log("group.flush", { stats: this.stats, shipId: this.ship.id, groupId, users: users.length, traits });
 
         return this.updateUsers(users, traits).then((res) => {
-          this.status = 'idle';
+          this.status = "idle";
           return { users: res, groupId };
         });
       }));
@@ -153,32 +153,34 @@ export class GroupBatchHandler {
     ret.then(() => {
       this.stats.success += 1;
       this.stats.flushing -= 1;
-    }, (err) => {
+    }, (/* err */) => {
       this.stats.error += 1;
       this.stats.flushing -= 1;
-    })
+    });
     return ret;
   }
 }
 
 let exiting = false;
 
-function group(event, { hull, ship }) {
+function handleGroup(event, { hull, ship }) {
   const { handle_groups } = ship.settings || {};
   if (exiting) {
-    const err = new Error('Exiting...');
+    const err = new Error("Exiting...");
     err.status = 503;
     return Promise.reject(err);
   } else if (event && event.groupId && handle_groups === true) {
     return GroupBatchHandler.handle(event, { hull, ship });
   }
+  return Promise.resolve();
 }
 
-group.flush = function() {
+handleGroup.flush = function flushGroup() {
   if (!exiting) {
     exiting = true;
     return Promise.all(map(BATCH_HANDLERS, (h) => h.flush()));
   }
-}
+  return Promise.resolve([]);
+};
 
-export default group;
+export default handleGroup;

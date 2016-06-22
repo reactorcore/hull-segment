@@ -135,16 +135,19 @@ module.exports = function SegmentHandler(options = {}) {
         url: req.url,
         params: req.params
       };
-      if (err.status === 500){
+      if (err.status === 500) {
         data.stack = err.stack;
       }
       Hull.log(err.message, JSON.stringify(data));
     }
+    /*
+      this is there just to make eslint not thow an error
+      we don't use next() but we need it in the params list
+      because express detects a middleware with 4 args as an error callback
+    */
+    if (false) { next(); }
     return res.status(err.status || 500).send({ message: err.message });
   });
-
-
-
 
   function handler(req, res) {
     return app.handle(req, res);

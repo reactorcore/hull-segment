@@ -1,33 +1,32 @@
-import { isEmpty, reduce, includes } from 'lodash'
-import scoped from '../scope-hull-client';
+import { isEmpty, reduce, includes } from "lodash";
+import scoped from "../scope-hull-client";
 
 const ALIASED_FIELDS = {
-  lastname: 'last_name',
-  firstname: 'first_name',
-  createdat: 'created_at'
+  lastname: "last_name",
+  firstname: "first_name",
+  createdat: "created_at"
 };
 
 const IGNORED_TRAITS = [
-  'id',
-  'external_id',
-  'guest_id',
-  'uniqToken',
-  'visitToken'
+  "id",
+  "external_id",
+  "guest_id",
+  "uniqToken",
+  "visitToken"
 ];
 
 function updateUser(hull, user) {
   try {
-
-    const { userId, anonymousId, traits={} } = user;
-    if (!userId && !anonymousId){ return false; }
+    const { userId, anonymousId, traits = {} } = user;
+    if (!userId && !anonymousId) { return false; }
 
     return scoped(hull, user).traits(traits).then(
-      (response) => {
-        return { traits }
+      (/* response*/) => {
+        return { traits };
       },
       (error) => {
         error.params = traits;
-        throw error
+        throw error;
       }
     );
   } catch (err) {
@@ -35,8 +34,8 @@ function updateUser(hull, user) {
   }
 }
 
-export default function handleIdentify(payload, { hull, ship }) {
-  const { context, traits, userId, anonymousId, integrations = {} } = payload;
+export default function handleIdentify(payload, { hull /* , ship*/ }) {
+  const { /* context, */ traits, userId, anonymousId, integrations = {} } = payload;
   const { metric, log } = hull.utils;
   const user = reduce((traits || {}), (u, v, k) => {
     if (v == null) return u;
@@ -56,16 +55,17 @@ export default function handleIdentify(payload, { hull, ship }) {
     const updating = updateUser(hull, user);
 
     updating.then(
-      ({ traits }) => {
-        metric('request.identify.updateUser');
-        log('identify.success', traits);
+      ({ t }) => {
+        metric("request.identify.updateUser");
+        log("identify.success", t);
       },
       error => {
-        metric('request.identify.updateUser.error');
-        log('identify.error', { error });
+        metric("request.identify.updateUser.error");
+        log("identify.error", { error });
       }
     );
 
     return updating;
   }
+  return user;
 }

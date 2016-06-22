@@ -1,21 +1,21 @@
-import track from './track';
+import track from "./track";
 
-export default function handlePage(payload={}, context={}) {
-  const { ship={} } = context;
-  const { handle_pages } = ship.settings || {}
-  if (!handle_pages) { return false }
-  const { path, search, title } = payload.properties || {}
+export default function handlePage(payload = {}, context = {}) {
+  const { ship = {} } = context;
+  const { handle_pages } = ship.settings || {};
+  if (!handle_pages) { return false; }
+  const { path, search, title } = payload.properties || {};
 
   const page = {
     ...payload,
-    event: 'page',
+    event: "page",
     properties: {
       path,
       search,
       title,
       name: payload.name
     }
-  }
+  };
 
-  track(page, context);
+  return track(page, context);
 }
