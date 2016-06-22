@@ -7,6 +7,5 @@ npm-debug.log
 newrelic_agent.log
 .env*
 
-
 dist
 lib
