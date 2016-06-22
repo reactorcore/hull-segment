@@ -107,9 +107,10 @@ export default function updateUserFactory(analyticsClient) {
 
     if (forward_events && events && events.length > 0) {
       events.map(e => {
-        const { page = {}, referrer = {}, os = {}, useragent, ip = 0 } = e.context || {};
+        const { location = {}, page = {}, referrer = {}, os = {}, useragent, ip = 0 } = e.context || {};
         const { event, properties } = e;
         const { name, category } = properties;
+        page.referrer = referrer.url;
         const type = (event === "page" || event === "screen") ? event : "track";
         let track = {
           anonymousId: e.anonymous_id,
@@ -118,27 +119,25 @@ export default function updateUserFactory(analyticsClient) {
           properties,
           integrations,
           context: {
-            ip, groupId, os,
+            ip, groupId, os, page, traits, location,
             userAgent: useragent,
             active: true,
           }
         };
 
         if (type === "page") {
+          const p = { ...page, ...properties };
           track = {
             ...track,
             name,
             channel: "browser",
-            properties: {
-              referrer: referrer.url,
-              ...page,
-              ...e.properties
-            }
+            properties: p
           };
+          track.context.page = p;
           hull.utils.log("send.page", track);
           analytics.page(track);
         } else {
-          track = { ...track, event, category, properties, context: { ...track.context, page } };
+          track = { ...track, event, category };
           hull.utils.log(`send.${type}`, track);
           analytics.track(track);
         }
