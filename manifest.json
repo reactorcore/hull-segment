@@ -54,7 +54,7 @@
     {
       "name" : "forward_events",
       "title" : "Forward Events received from Segment",
-      "description" : "Re-send events we received from Segment. Use ONLY if Segment source and Destination are different.",
+      "description" : "Re-send events we received from Segment.com. Use ONLY if Segment source and Destination are different.",
       "type" : "boolean",
       "default" : false
     }
@@ -76,14 +76,14 @@
     {
       "name" : "handle_pages",
       "title" : "Handle Pages",
-      "description" : "Store analytics.page() events. Since there can be quite a few of those, they're disabled by default",
+      "description" : "Store analytics.page() events. Can generate a lot of volume",
       "type" : "boolean",
       "default" : false
     },
     {
       "name" : "handle_screens",
       "title" : "Handle Screens",
-      "description" : "Store analytics.screen() events. Since there can be quite a few of those, they're disabled by default",
+      "description" : "Store analytics.screen() events. Can generate a lot of volume",
       "type" : "boolean",
       "default" : false
     },
@@ -99,7 +99,7 @@
     {
       "name" : "handle_groups",
       "title" : "Handle Groups",
-      "description" : "Applies group attributes to as user traits, prefixed with group/",
+      "description" : "Handle group attributes as user traits, prefixed with 'group/'",
       "type" : "boolean",
       "default" : false
     }
