@@ -24,20 +24,15 @@
   ],
   "private_settings": [
     {
-      "name": "synchronized_properties",
-      "title": "Properties sent back to Segment.com",
-      "description": "Send those user properties to Segment.com. Sends nothing if empty.",
-      "type": "array",
-      "format": "trait",
-      "items": {
-        "type": "string"
-      },
-      "default": []
+      "name": "sending_title",
+      "title": "Sending data to segment",
+      "format": "title",
+      "type": "string"
     },
     {
       "name": "synchronized_segments",
       "title": "Filter users",
-      "description": "Only send users who match these segments to Segment.com. Keep empty to send everyone.",
+      "description": "Only send Users matching one or more of these segments. Sends everyone if empty.",
       "type": "array",
       "format": "segment",
       "items": {
@@ -46,9 +41,20 @@
       "default": []
     },
     {
+      "name": "synchronized_properties",
+      "title": "Properties sent to Segment.com",
+      "description": "Select User properties sent to Segment.com. Sends nothing if empty.",
+      "type": "array",
+      "format": "trait",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    {
       "name" : "forward_events",
-      "title" : "Forward Events",
-      "description" : "Also forward events. Use only if your segment source and destination are different.",
+      "title" : "Forward Events received from Segment",
+      "description" : "Re-send events we received from Segment. Use ONLY if Segment source and Destination are different.",
       "type" : "boolean",
       "default" : false
     }
@@ -60,6 +66,12 @@
       "description":"Segment Write Key, found in Project Settings > Keys",
       "type": "string",
       "format": "text"
+    },
+    {
+      "name": "receiving_title",
+      "title": "Receiving data from Segment",
+      "format": "title",
+      "type": "string"
     },
     {
       "name" : "handle_pages",
