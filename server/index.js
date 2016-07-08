@@ -17,10 +17,10 @@ const options = {
 };
 
 Hull.onLog(function onLog(message, data, ctx) {
-  console.log(`${ctx.id} ] segment.${message}`, JSON.stringify(data));
+  console.log(`[${ctx.id}] segment.${message}`, JSON.stringify(data));
 });
 Hull.onMetric(function onMetric(metric, value, ctx) {
-  console.log(`${ctx.id} ] segment.${metric}`, value);
+  console.log(`[${ctx.id}] segment.${metric}`, value);
 });
 
 if (process.env.LIBRATO_TOKEN && process.env.LIBRATO_USER) {
