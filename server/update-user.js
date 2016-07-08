@@ -105,8 +105,11 @@ export default function updateUserFactory(analyticsClient) {
     hull.utils.log("send.identify", { userId, traits, context });
     const ret = analytics.identify({ anonymousId, userId, traits, context, integrations });
 
-    if (forward_events && events && events.length > 0) {
+    if (events && events.length > 0) {
       events.map(e => {
+        // Don't forward events of source "segment" when forwarding disabled.
+        if (e.event_source === "segment" && !forward_events) { return true; }
+
         const { location = {}, page = {}, referrer = {}, os = {}, useragent, ip = 0 } = e.context || {};
         const { event, properties } = e;
         const { name, category } = properties;
