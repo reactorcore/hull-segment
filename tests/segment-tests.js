@@ -5,7 +5,7 @@ const { track, identify, group, page, screen } = require("./fixtures");
 const sinon = require("sinon");
 const assert = require("assert");
 const jwt = require("jwt-simple");
-const hullClient = require("hull/src/middleware/client");
+const hullClient = require("hull/lib/middleware/client");
 
 const API_RESPONSES = {
   default: {
