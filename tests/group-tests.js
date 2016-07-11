@@ -21,42 +21,41 @@ function makeUsers(count, user, groupIds) {
   return _.range(count).map(makeUser.bind(undefined, user, groupIds));
 }
 
+function noop() {}
+
 const Mocks = {
   Hull(options = {}) {
-
     this.options = options;
-
-    this.post = (path, params = {})=> {
+    this.post = (path, params = {}) => {
       try {
         const { page } = params;
         const result = {
-          pagination: { page: page, pages: this.options.pages || 2 },
+          pagination: { page, pages: this.options.pages || 2 },
           data: makeUsers(this.options.makeUsers || 10, {}, this.options.groupIds)
         };
         return Promise.resolve(result);
-      } catch(err) {
+      } catch (err) {
         return Promise.reject(err);
       }
-    }
+    };
 
     this.as = (asUser) => {
       this.options.as = asUser;
       return this;
-    }
+    };
 
-    this.traits = (traits) => {
-      return Promise.resolve({});
-    }
+    this.traits = () => Promise.resolve({});
+
     this.utils = {
-      log: function(){},
-      metric: function(){},
-      debug: function(){}
-    }
+      log: noop,
+      metric: noop,
+      debug: noop
+    };
   }
-}
+};
 
-const route = function(){ };
-const middleware = function(req, res, next){ next(); };
+const route = noop;
+const middleware = (req, res, next) => next();
 
 const Routes = {
   Readme() { return route; },
@@ -76,7 +75,7 @@ describe("GroupBatchHandler", () => {
   const users = makeUsers(10);
 
   it("should make users", () => {
-    assert(users.length === 10)
+    assert(users.length === 10);
   });
 
   it("GroupBatchHandler.add", (done) => {
@@ -104,8 +103,8 @@ describe("GroupBatchHandler", () => {
     hull.post = sinon.spy(hull.post);
 
     const handler = new GroupBatchHandler({ hull, ship });
-    handler.searchUsers().then((users) => {
-      assert.equal(users.length, 20);
+    handler.searchUsers().then((response) => {
+      assert.equal(response.length, 20);
       assert.equal(hull.post.callCount, 2);
     }).then(done);
   });
@@ -119,7 +118,7 @@ describe("GroupBatchHandler", () => {
       const group = groups[groupId];
       const userId = Object.keys(group)[0];
       const user = group[userId];
-      assert.deepEqual(user["external_id"], userId);
+      assert.deepEqual(user.external_id, userId);
       assert.deepEqual(user["traits_group/id"], groupId);
     }).then(done);
   });
