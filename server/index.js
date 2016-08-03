@@ -1,14 +1,14 @@
 /* eslint global-require: 0 */
 
-import Hull from "hull";
-import Server from "./server";
-
-const PORT = process.env.PORT || 8082;
-
 if (process.env.NEW_RELIC_LICENSE_KEY) {
   console.warn("Starting newrelic agent with key: ", process.env.NEW_RELIC_LICENSE_KEY);
   require("newrelic");
 }
+
+const Hull = require("hull");
+const Server = require("./server");
+
+const PORT = process.env.PORT || 8082;
 
 const options = {
   Hull,
