@@ -162,14 +162,14 @@ export class GroupBatchHandler {
 
 let exiting = false;
 
-function handleGroup(event, { hull, ship }) {
+function handleGroup(event, { hull, ship, metric }) {
   const { handle_groups } = ship.settings || {};
   if (exiting) {
     const err = new Error("Exiting...");
     err.status = 503;
     return Promise.reject(err);
   } else if (event && event.groupId && handle_groups === true) {
-    return GroupBatchHandler.handle(event, { hull, ship });
+    return GroupBatchHandler.handle(event, { hull, ship, metric });
   }
   return Promise.resolve();
 }
