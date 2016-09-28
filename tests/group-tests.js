@@ -53,7 +53,6 @@ const Mocks = {
 };
 
 const route = noop;
-const middleware = (req, res, next) => next();
 
 const Routes = {
   Readme() { return route; },
@@ -61,12 +60,11 @@ const Routes = {
   Manifest() { return route; }
 };
 
-const Middlewares = {
-  hullClient() { return middleware; }
-};
 
 Mocks.Hull.Routes = Routes;
-Mocks.Hull.Middlewares = Middlewares;
+Mocks.Hull.Middleware = function() {
+  return (req, res, next) => next();;
+};
 
 describe("GroupBatchHandler", () => {
   const ship = { id: "shipId" };

@@ -73,7 +73,7 @@ function sendRequest({ query, body, headers, metric, Hull, logger }) {
 
   MockHull.logger = Logger;
   MockHull.Routes = MockHull.Routes || Routes;
-  MockHull.Middlewares = { hullClient: hullClient.bind(undefined, MockHull) };
+  MockHull.Middleware =  hullClient.bind(undefined, MockHull);
   MockHull.NotifHandler = () => { return () => {}; };
   MockHull.BatchHandler = () => { return () => {}; };
 
