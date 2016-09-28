@@ -10,7 +10,9 @@ export default function scope(hull, user = {} /* , context = {}*/) {
   if (hullId || userId) {
     if (hullId) { as.id = hullId; }
     if (userId) { as.external_id = userId; }
-  } else if (traits.email && EMAIL_REGEXP.test(traits.email)) {
+  }
+
+  if (traits.email && EMAIL_REGEXP.test(traits.email)) {
     as.email = traits.email.toLowerCase();
   }
 

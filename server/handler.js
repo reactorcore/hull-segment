@@ -2,6 +2,8 @@ import connect from "connect";
 import _ from "lodash";
 import rawBody from "raw-body";
 
+function noop() {}
+
 function camelize(str) {
   const ret = str.replace(/[-_\s]+(.)?/g, (match, c) => (c ? c.toUpperCase() : ""));
   return ret.charAt(0).toLowerCase() + ret.slice(1);
@@ -51,22 +53,26 @@ function parseRequest(req, res, next) {
   });
 }
 
-function processHandlers(handlers, Hull) {
+function processHandlers(handlers, { Hull, onMetric }) {
   return function processMiddleware(req, res, next) {
     try {
       const { client: hull, ship } = req.hull;
       const { message } = req.segment;
 
+      const metric = (metricName, value) => {
+        return onMetric(metricName, value, ship || {});
+      };
+
       const eventName = message.type;
       const eventHandlers = handlers[eventName];
 
       if (hull) {
-        hull.utils.debug("message", JSON.stringify(message));
-        hull.utils.metric(`request.${eventName}`, 1);
+        hull.logger.debug("message", JSON.stringify(message));
       } else {
-        Hull.debug("message", JSON.stringify(message));
-        Hull.metric(`request.${eventName}`, 1);
+        Hull.logger.debug("message", JSON.stringify(message));
       }
+
+      metric(`request.${eventName}`, 1);
 
       if (eventHandlers && eventHandlers.length > 0) {
         if (message && message.integrations && message.integrations.Hull === false) {
@@ -79,7 +85,8 @@ function processHandlers(handlers, Hull) {
           return k;
         });
 
-        const processors = eventHandlers.map(fn => fn(message, { ship, hull }));
+
+        const processors = eventHandlers.map(fn => fn(message, { ship, hull, metric }));
 
         Promise.all(processors).then(() => {
           next();
@@ -103,7 +110,7 @@ function processHandlers(handlers, Hull) {
 
 module.exports = function SegmentHandler(options = {}) {
   const app = connect();
-  const { Hull, hullClient, handlers = [], hostSecret = "" } = options;
+  const { Hull, hullClient, handlers = [], hostSecret = "", onMetric = noop } = options;
 
   const _handlers = {};
   const _flushers = [];
@@ -121,7 +128,7 @@ module.exports = function SegmentHandler(options = {}) {
   app.use(parseRequest); // parse segment request, early return if invalid.
   app.use(authTokenMiddleware); // retreives Hull config and stores it in the right place.
   app.use(hullClient({ hostSecret, fetchShip: true, cacheShip: true })); // builds hull Client
-  app.use(processHandlers(_handlers, Hull));
+  app.use(processHandlers(_handlers, { Hull, onMetric }));
   app.use((req, res) => {
     res.json({ message: "thanks" });
   });
@@ -138,7 +145,7 @@ module.exports = function SegmentHandler(options = {}) {
       if (err.status === 500) {
         data.stack = err.stack;
       }
-      Hull.log(err.message, JSON.stringify(data));
+      Hull.logger.info(err.message, data);
     }
     /*
       this is there just to make eslint not thow an error

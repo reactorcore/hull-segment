@@ -20,7 +20,7 @@ export default function updateUserFactory(analyticsClient) {
     // Ignore if write_key is not present
     const { write_key, handle_groups, public_id_field } = ship.settings || {};
     if (!write_key) {
-      hull.utils.log("No write_key for ship");
+      hull.logger.info("No write_key for ship");
       return false;
     }
 
@@ -43,7 +43,7 @@ export default function updateUserFactory(analyticsClient) {
 
     // We have no identifier for the user, we have to skip
     if (!userId && !anonymousId) {
-      hull.utils.log("skip.user - no identifier");
+      hull.logger.info("skip.user - no identifier", message);
       return false;
     }
 
@@ -58,7 +58,7 @@ export default function updateUserFactory(analyticsClient) {
       synchronized_segments.length > 0 &&
       !_.intersection(segment_ids, synchronized_segments).length
       ) {
-      hull.utils.log(`skip.update for ${user.id} because not matching any segment`);
+      hull.logger.debug(`skip.update for ${user.id} because not matching any segment`);
       return false;
     }
 
@@ -97,12 +97,12 @@ export default function updateUserFactory(analyticsClient) {
         return group;
       }, {});
       if (!_.isEmpty(groupTraits)) {
-        hull.utils.log("send.group", { groupId, userId, traits: groupTraits, context });
+        hull.logger.debug("send.group", { groupId, userId, traits: groupTraits, context });
         analytics.group({ groupId, anonymousId, userId, traits: groupTraits, context, integrations });
       }
     }
 
-    hull.utils.log("send.identify", { userId, traits, context });
+    hull.logger.debug("send.identify", { userId, traits, context });
     const ret = analytics.identify({ anonymousId, userId, traits, context, integrations });
 
     if (events && events.length > 0) {
@@ -116,7 +116,7 @@ export default function updateUserFactory(analyticsClient) {
         page.referrer = referrer.url;
         const type = (event === "page" || event === "screen") ? event : "track";
         let track = {
-          anonymousId: e.anonymous_id,
+          anonymousId: e.anonymous_id || anonymousId,
           timestamp: new Date(e.created_at),
           userId,
           properties,
@@ -137,11 +137,11 @@ export default function updateUserFactory(analyticsClient) {
             properties: p
           };
           track.context.page = p;
-          hull.utils.log("send.page", track);
+          hull.logger.debug("send.page", track);
           analytics.page(track);
         } else {
           track = { ...track, event, category };
-          hull.utils.log(`send.${type}`, track);
+          hull.logger.debug(`send.${type}`);
           analytics.track(track);
         }
         return true;

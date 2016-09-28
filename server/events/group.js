@@ -7,22 +7,21 @@ const BATCH_THROTTLE = parseInt(process.env.BATCH_THROTTLE || 5000, 10);
 
 export class GroupBatchHandler {
 
-  constructor({ hull, ship }) {
+  constructor({ hull, ship, metric }) {
     this.hull = hull;
     this.ship = ship;
-    this.metric = (metric, value) => {
-      this.hull.utils.metric(`request.group.${metric}`, value);
+    this.metric = (metricName, value) => {
+      metric(`request.group.${metricName}`, value);
     };
 
-    this.log = this.hull.utils.log;
     this.groups = {};
     this.status = "idle";
     this.flushLater = throttle(this.flush.bind(this), BATCH_THROTTLE);
     this.stats = { flush: 0, add: 0, flushing: 0, success: 0, error: 0 };
   }
 
-  static handle(event, { hull, ship }) {
-    const handler = BATCH_HANDLERS[ship.id] = BATCH_HANDLERS[ship.id] || new GroupBatchHandler({ hull, ship });
+  static handle(event, { hull, ship, metric }) {
+    const handler = BATCH_HANDLERS[ship.id] = BATCH_HANDLERS[ship.id] || new GroupBatchHandler({ hull, ship, metric });
     handler.add(event, { hull, ship });
 
     if (Object.keys(handler.groups).length > MAX_BATCH_SIZE) {
@@ -141,7 +140,7 @@ export class GroupBatchHandler {
 
         const users = values(Object.assign({}, currentUsers, groupUsers));
 
-        this.log("group.flush", { stats: this.stats, shipId: this.ship.id, groupId, users: users.length, traits });
+        this.hull.logger.info("group.flush", { stats: this.stats, shipId: this.ship.id, groupId, users: users.length, traits });
 
         return this.updateUsers(users, traits).then((res) => {
           this.status = "idle";

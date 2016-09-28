@@ -1,10 +1,10 @@
 import { reduce } from "lodash";
 import scoped from "../scope-hull-client";
 
-export default function handleTrack(payload, { hull }) {
+export default function handleTrack(payload, { hull, metric }) {
   const { context = {}, anonymousId, event, properties, userId, originalTimestamp, sentAt, receivedAt, integrations = {} } = payload;
 
-  const { metric, log } = hull.utils;
+  const { logger } = hull;
   const { page = {}, location = {}, userAgent, ip = "0" } = context;
   const { url, referrer } = page;
   const { latitude, longitude } = location;
@@ -39,11 +39,11 @@ export default function handleTrack(payload, { hull }) {
 
   tracking.then(
     () => {
-      log("track.success", { trackContext, event, properties });
+      logger.debug("track.success", { trackContext, event, properties });
     },
     error => {
       metric("request.track.error");
-      log("track.error", { error });
+      logger.info("track.error", { error });
     }
   );
 

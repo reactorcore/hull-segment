@@ -9,7 +9,7 @@ import updateUser from "./update-user";
 import ejs from "ejs";
 
 module.exports = function server(options = {}) {
-  const { Hull, hostSecret } = options;
+  const { Hull, hostSecret, onMetric } = options;
   const { BatchHandler, NotifHandler, Routes, Middlewares } = Hull;
   const { hullClient } = Middlewares;
   const { Readme, Manifest } = Routes;
@@ -54,6 +54,7 @@ module.exports = function server(options = {}) {
     onError(err) {
       console.warn("Error handling segment event", err, err && err.stack);
     },
+    onMetric,
     hostSecret,
     hullClient,
     Hull,

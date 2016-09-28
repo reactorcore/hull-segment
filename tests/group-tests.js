@@ -23,6 +23,8 @@ function makeUsers(count, user, groupIds) {
 
 function noop() {}
 
+function metric() {}
+
 const Mocks = {
   Hull(options = {}) {
     this.options = options;
@@ -46,11 +48,7 @@ const Mocks = {
 
     this.traits = () => Promise.resolve({});
 
-    this.utils = {
-      log: noop,
-      metric: noop,
-      debug: noop
-    };
+    this.logger = { info: noop, debug: noop };
   }
 };
 
@@ -80,7 +78,7 @@ describe("GroupBatchHandler", () => {
 
   it("GroupBatchHandler.add", (done) => {
     const hull = new Mocks.Hull();
-    const handler = new GroupBatchHandler({ hull, ship });
+    const handler = new GroupBatchHandler({ hull, ship, metric });
     const groupId = makeGroupId(1);
     const userId = _.uniqueId("externalId-");
 
@@ -102,7 +100,7 @@ describe("GroupBatchHandler", () => {
     const hull = new Mocks.Hull();
     hull.post = sinon.spy(hull.post);
 
-    const handler = new GroupBatchHandler({ hull, ship });
+    const handler = new GroupBatchHandler({ hull, ship, metric });
     handler.searchUsers().then((response) => {
       assert.equal(response.length, 20);
       assert.equal(hull.post.callCount, 2);
@@ -112,7 +110,7 @@ describe("GroupBatchHandler", () => {
   it("GroupBatchHandler.getUsersByGroup", (done) => {
     const hull = new Mocks.Hull();
     hull.post = sinon.spy(hull.post);
-    const handler = new GroupBatchHandler({ hull, ship });
+    const handler = new GroupBatchHandler({ hull, ship, metric });
     handler.getUsersByGroup([]).then((groups) => {
       const groupId = Object.keys(groups)[0];
       const group = groups[groupId];
@@ -127,7 +125,7 @@ describe("GroupBatchHandler", () => {
     const hull = new Mocks.Hull({ makeUsers: 1, groupIds: [makeGroupId(1)] });
     hull.as = sinon.spy(hull.as);
     hull.traits = sinon.spy(hull.traits);
-    const handler = new GroupBatchHandler({ hull, ship });
+    const handler = new GroupBatchHandler({ hull, ship, metric });
     const groupId = makeGroupId(1);
     const userId = _.uniqueId("externalId-");
 

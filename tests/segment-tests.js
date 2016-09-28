@@ -1,7 +1,7 @@
 /* global describe, it */
 const request = require("supertest");
 const app = require("../server/server");
-const { track, identify, group, page, screen } = require("./fixtures");
+const { track, identify, page, screen } = require("./fixtures");
 const sinon = require("sinon");
 const assert = require("assert");
 const jwt = require("jwt-simple");
@@ -28,13 +28,8 @@ const API_RESPONSES = {
   }
 };
 
-const route = function () { };
-
-const utils = {
-  log: function log() { },
-  metric: function metric() { },
-  debug: function debug() { }
-};
+function route() {}
+function noop() {}
 
 const Routes = {
   Readme() { return route; },
@@ -51,13 +46,16 @@ const config = {
   ship: "56f3d53ef89a8791cb000004"
 };
 
-function sendRequest({ query, body, headers, metric = utils.metric, log = utils.log, debug = utils.debug, Hull }) {
+
+function sendRequest({ query, body, headers, metric, Hull, logger }) {
+  const Logger = logger || { info: noop, debug: noop };
+
   const MockHull = Hull || function MockHull() {
     this.get = (id) => {
       if (id === "not_found") {
         return Promise.reject(new Error("Not found"));
       }
-      return Promise.resolve(API_RESPONSES.default);
+      return Promise.resolve(Object.assign({ id }, API_RESPONSES.default));
     };
     this.post = () => {
       return Promise.resolve({});
@@ -70,18 +68,16 @@ function sendRequest({ query, body, headers, metric = utils.metric, log = utils.
     };
     this.traits = () => Promise.resolve("OK");
     this.track = () => Promise.resolve("OK");
-    this.utils = { log, metric, debug };
+    this.logger = Logger;
   };
 
+  MockHull.logger = Logger;
   MockHull.Routes = MockHull.Routes || Routes;
   MockHull.Middlewares = { hullClient: hullClient.bind(undefined, MockHull) };
-  MockHull.metric = metric;
-  MockHull.log = log;
-  MockHull.debug = debug;
   MockHull.NotifHandler = () => { return () => {}; };
   MockHull.BatchHandler = () => { return () => {}; };
 
-  const client = request(app({ hostSecret, Hull: MockHull }));
+  const client = request(app({ hostSecret, onMetric: metric, Hull: MockHull }));
   return client.post("/segment")
     .query(query || config)
     .set(headers || {})
@@ -92,28 +88,28 @@ function sendRequest({ query, body, headers, metric = utils.metric, log = utils.
 
 function mockHullFactory(postSpy, getResponse) {
   return function MockHull() {
-    this.utils = utils;
     this.as = () => this;
-    this.get = (id) => Promise.resolve(getResponse);
+    this.get = () => Promise.resolve(getResponse);
     this.post = (path, params) => {
       postSpy(path, params);
       return Promise.resolve();
     };
-    this.traits = (traits) =>{
+    this.traits = (traits) => {
       postSpy("me/traits", traits);
       return Promise.resolve();
     };
-    this.track = (event, properties, context) => {
+    this.track = (event) => {
       postSpy("/t", event);
       return Promise.resolve();
     };
+    this.logger = { info: noop, debug: noop };
   };
 }
 
 describe("Segment Ship", () => {
   describe("Error payloads", () => {
     it("Invalid body", (done) => {
-      sendRequest({ body: "boom" })
+      sendRequest({ body: "{boom" })
           .expect({ message: "Invalid Body" })
           .expect(400, done);
     });
@@ -281,12 +277,12 @@ describe("Segment Ship", () => {
 
   describe("Collecting metric", () => {
     it("call metric collector", (done) => {
-      const metric = sinon.spy();
-      sendRequest({ metric })
+      const metricHandler = sinon.spy();
+      sendRequest({ metric: metricHandler })
           .expect({ message: "thanks" })
           .expect(200)
           .end(() => {
-            assert(metric.withArgs("request.track").calledOnce);
+            assert(metricHandler.withArgs("request.track").calledOnce);
             done();
           });
     });
@@ -295,11 +291,13 @@ describe("Segment Ship", () => {
   describe("Collecting logs", () => {
     it("call logs collector", (done) => {
       const log = sinon.spy();
-      sendRequest({ log })
+
+      sendRequest({ logger: { debug: log, info: log } })
           .expect({ message: "thanks" })
           .expect(200)
           .end(() => {
-            assert(log.calledOnce);
+            assert(log.withArgs("track.success").calledOnce);
+            assert(log.withArgs("message").calledOnce);
             done();
           });
     });
