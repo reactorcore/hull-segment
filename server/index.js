@@ -10,6 +10,10 @@ const Server = require("./server");
 
 const PORT = process.env.PORT || 8082;
 
+if (process.env.LOG_LEVEL) {
+  Hull.logger.transports.console.level = process.env.LOG_LEVEL;
+}
+
 const options = {
   Hull,
   hostSecret: process.env.SECRET || "1234",
