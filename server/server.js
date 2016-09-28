@@ -10,15 +10,13 @@ import ejs from "ejs";
 
 module.exports = function server(options = {}) {
   const { Hull, hostSecret, onMetric } = options;
-  const { BatchHandler, NotifHandler, Routes, Middlewares } = Hull;
-  const { hullClient } = Middlewares;
+  const { BatchHandler, NotifHandler, Routes, Middleware: hullClient } = Hull;
   const { Readme, Manifest } = Routes;
   const app = express();
 
   if (options.devMode) {
     app.use(devMode());
   }
-
 
   app.engine("html", ejs.renderFile);
   app.set("views", path.resolve(__dirname, "..", "views"));
@@ -29,7 +27,7 @@ module.exports = function server(options = {}) {
   app.get("/", Readme);
   app.get("/readme", Readme);
 
-  app.get("/admin.html", hullClient(Hull, { fetchShip: false }), (req, res) => {
+  app.get("/admin.html", hullClient({ hostSecret, fetchShip: false }), (req, res) => {
     const { config } = req.hull;
     const apiKey = jwt.encode(config, hostSecret);
     res.render("admin.html", { apiKey });
@@ -38,12 +36,14 @@ module.exports = function server(options = {}) {
   const analyticsClient = analyticsClientFactory();
 
   app.post("/notify", NotifHandler({
+    hostSecret,
     groupTraits: false,
     handlers: {
       "user:update": updateUser(analyticsClient),
     }
   }));
   app.post("/batch", BatchHandler({
+    hostSecret,
     groupTraits: false,
     handler: (notifications = [], context) => {
       notifications.map(n => updateUser(analyticsClient)(n, context));
@@ -75,6 +75,7 @@ module.exports = function server(options = {}) {
         params: req.params
       };
       console.log("Error ----------------", err.message, err.status, data);
+      console.log(err.stack);
     }
 
     return res.status(err.status || 500).send({ message: err.message });
