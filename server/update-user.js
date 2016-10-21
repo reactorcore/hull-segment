@@ -51,7 +51,8 @@ export default function updateUserFactory(analyticsClient) {
     const {
       synchronized_properties = [],
       synchronized_segments = [],
-      forward_events
+      forward_events = false,
+      send_events = []
     } = ship.private_settings || {};
     const segment_ids = _.map(segments, "id");
     if (
@@ -108,7 +109,14 @@ export default function updateUserFactory(analyticsClient) {
     if (events && events.length > 0) {
       events.map(e => {
         // Don't forward events of source "segment" when forwarding disabled.
-        if (e.event_source === "segment" && !forward_events) { return true; }
+        if (e.event_source === "segment" && !forward_events) {
+          hull.logger.debug("event.skip.segment", { message: "segment event without forwarding" });
+          return true;
+        }
+        if (send_events && send_events.length && !_.includes(send_events, e.event)) {
+          hull.logger.debug("event.skip.list", { message: "not included in event list" });
+          return true;
+        }
 
         const { location = {}, page = {}, referrer = {}, os = {}, useragent, ip = 0 } = e.context || {};
         const { event, properties } = e;

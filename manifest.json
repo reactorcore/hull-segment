@@ -52,6 +52,14 @@
       "default": []
     },
     {
+      "name": "send_events",
+      "title": "Send Events to Segment.com",
+      "description" : "Sends everything if empty",
+      "type": "array",
+      "format": "event",
+      "default": ["Entered segment", "Left segment"]
+    },
+    {
       "name" : "forward_events",
       "title" : "Allow forwarding events received from Segment.com",
       "description" : "Do NOT enable if Segment.com source and destination are the same. It could result in duplicates",
