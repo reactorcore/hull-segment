@@ -31,8 +31,8 @@
     },
     {
       "name": "synchronized_segments",
-      "title": "Filter users",
-      "description": "Only send Users matching one or more of these segments. Sends everyone if empty.",
+      "title": "Skips Users who don't belong to any of these segments",
+      "description": "Sends everyone if empty.",
       "type": "array",
       "format": "segment",
       "items": {
@@ -42,8 +42,8 @@
     },
     {
       "name": "synchronized_properties",
-      "title": "Properties sent to Segment.com",
-      "description": "Select User properties sent to Segment.com. Sends nothing if empty.",
+      "title": "Send Attributes to Segment.com",
+      "description": "Only sends list of user segments as 'hull_segments' attribute if empty.",
       "type": "array",
       "format": "trait",
       "items": {
@@ -53,8 +53,8 @@
     },
     {
       "name" : "forward_events",
-      "title" : "Forward Events received from Segment",
-      "description" : "Re-send events we received from Segment.com. Use ONLY if Segment source and Destination are different.",
+      "title" : "Allow forwarding events received from Segment.com",
+      "description" : "Do NOT enable if Segment.com source and destination are the same. It could result in duplicates",
       "type" : "boolean",
       "default" : false
     }
