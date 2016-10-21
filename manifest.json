@@ -1,7 +1,7 @@
 {
   "name": "Segment",
   "description": "Receive Events from Segment, send updated data to Segment",
-  "tags": ["incoming", "outgoing", "batch"],
+  "tags": ["incoming", "outgoing", "batch", "oneColumn"],
   "index":"ship.js",
   "picture": "picture.png",
   "ui": false,
