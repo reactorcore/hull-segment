@@ -118,7 +118,7 @@ export default function updateUserFactory(analyticsClient) {
           return true;
         }
 
-        hull.logger.debug("event.post", event)
+        hull.logger.debug("event.post", e);
 
         const { location = {}, page = {}, referrer = {}, os = {}, useragent, ip = 0 } = e.context || {};
         const { event, properties } = e;
