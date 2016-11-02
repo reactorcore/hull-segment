@@ -157,7 +157,7 @@ export default function updateUserFactory(analyticsClient) {
             properties
           };
           hull.logger.debug("send.screen", track);
-          analytics.enqueue('screen', track);
+          analytics.enqueue("screen", track);
         } else {
           track = { ...track, event, category };
           hull.logger.debug(`send.${type}`);
