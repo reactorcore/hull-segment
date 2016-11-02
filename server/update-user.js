@@ -149,6 +149,15 @@ export default function updateUserFactory(analyticsClient) {
           track.context.page = p;
           hull.logger.debug("send.page", track);
           analytics.page(track);
+        } else if (type === "screen") {
+          track = {
+            ...track,
+            name,
+            channel: "mobile",
+            properties
+          };
+          hull.logger.debug("send.screen", track);
+          analytics.page(track);
         } else {
           track = { ...track, event, category };
           hull.logger.debug(`send.${type}`);
