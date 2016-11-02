@@ -10,10 +10,8 @@ export default function handleScreen(payload = {}, context = {}) {
     ...payload,
     event: "screen",
     properties: {
-      path,
-      search,
-      title,
-      name: payload.name
+      name: payload.name,
+      ...properties
     }
   };
   return track(screen, context);

@@ -10,10 +10,8 @@ export default function handlePage(payload = {}, context = {}) {
     ...payload,
     event: "page",
     properties: {
-      path,
-      search,
-      title,
-      name: payload.name
+      name: payload.name,
+      ...properties
     }
   };
 
