@@ -114,7 +114,7 @@ export default function updateUserFactory(analyticsClient) {
           return true;
         }
         if (send_events && send_events.length && !_.includes(send_events, e.event)) {
-          hull.logger.debug("event.skip.list", { message: "not included in event list" });
+          hull.logger.debug("event.skip.list", { message: "not included in event list", event: e.event });
           return true;
         }
 
