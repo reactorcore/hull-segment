@@ -43,7 +43,7 @@ export default function updateUserFactory(analyticsClient) {
 
     // We have no identifier for the user, we have to skip
     if (!userId && !anonymousId) {
-      hull.logger.info("skip.user - no identifier", _.pick(user, 'id', 'email'));
+      hull.logger.info("skip.user - no identifier", _.pick(user, "id", "email"));
       return false;
     }
 
