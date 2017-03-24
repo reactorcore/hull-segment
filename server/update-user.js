@@ -8,7 +8,7 @@ import _ from "lodash";
 // };
 
 export default function updateUserFactory(analyticsClient) {
-  return function updateUser({ message = {} }, { ship = {}, hull = {} }) {
+  return function updateUser({ message = {} }, { ship = {}, hull = {}, ignoreFilters = false }) {
     const { user = {}, segments = [], events = [] } = message;
 
     // Empty payload ?
@@ -43,7 +43,7 @@ export default function updateUserFactory(analyticsClient) {
 
     // We have no identifier for the user, we have to skip
     if (!userId && !anonymousId) {
-      hull.logger.info("skip.user - no identifier", message);
+      hull.logger.info("skip.user - no identifier", _.pick(user, 'id', 'email'));
       return false;
     }
 
@@ -56,6 +56,7 @@ export default function updateUserFactory(analyticsClient) {
     } = ship.private_settings || {};
     const segment_ids = _.map(segments, "id");
     if (
+      !ignoreFilters &&
       synchronized_segments.length > 0 &&
       !_.intersection(segment_ids, synchronized_segments).length
       ) {

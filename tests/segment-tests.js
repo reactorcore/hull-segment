@@ -68,6 +68,7 @@ function sendRequest({ query, body, headers, metric, Hull, logger }) {
     };
     this.traits = () => Promise.resolve("OK");
     this.track = () => Promise.resolve("OK");
+    this.configuration = () => config;
     this.logger = Logger;
   };
 
@@ -103,6 +104,7 @@ function mockHullFactory(postSpy, getResponse) {
       return Promise.resolve();
     };
     this.logger = { info: noop, debug: noop };
+    this.configuration = () => config;
   };
 }
 

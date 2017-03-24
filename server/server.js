@@ -46,7 +46,8 @@ module.exports = function server(options = {}) {
     hostSecret,
     groupTraits: false,
     handler: (notifications = [], context) => {
-      notifications.map(n => updateUser(analyticsClient)(n, context));
+      context.hull.logger.info("batch.handle", { processed: context.processed });
+      notifications.map(n => updateUser(analyticsClient)(n, { ...context, ignoreFilters: true }));
     }
   }));
 
