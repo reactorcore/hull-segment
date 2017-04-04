@@ -14,6 +14,8 @@ if (process.env.LOG_LEVEL) {
   Hull.logger.transports.console.level = process.env.LOG_LEVEL;
 }
 
+Hull.logger.transports.console.json = true;
+
 const options = {
   Hull,
   hostSecret: process.env.SECRET || "1234",
