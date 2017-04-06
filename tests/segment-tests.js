@@ -74,7 +74,7 @@ function sendRequest({ query, body, headers, metric, Hull, logger }) {
 
   MockHull.logger = Logger;
   MockHull.Routes = MockHull.Routes || Routes;
-  MockHull.Middleware =  hullClient.bind(undefined, MockHull);
+  MockHull.Middleware = hullClient.bind(undefined, MockHull);
   MockHull.NotifHandler = () => { return () => {}; };
   MockHull.BatchHandler = () => { return () => {}; };
 
@@ -99,8 +99,8 @@ function mockHullFactory(postSpy, getResponse) {
       postSpy("me/traits", traits);
       return Promise.resolve();
     };
-    this.track = (event) => {
-      postSpy("/t", event);
+    this.track = (event, params, context) => {
+      postSpy("/t", event, params, context);
       return Promise.resolve();
     };
     this.logger = { info: noop, debug: noop };
@@ -192,6 +192,7 @@ describe("Segment Ship", () => {
         .expect({ message: "thanks" })
         .expect(200)
         .end(() => {
+          assert(postSpy.firstCall.args[3].active !== true);
           assert(postSpy.withArgs("/t", "Viewed Checkout Step").calledOnce);
           done();
         });
@@ -206,6 +207,7 @@ describe("Segment Ship", () => {
         .expect(200)
         .end(() => {
           assert(postSpy.withArgs("/t", "page").calledOnce);
+          assert(postSpy.firstCall.args[3].active === true);
           done();
         });
     });
@@ -230,6 +232,7 @@ describe("Segment Ship", () => {
           .expect({ message: "thanks" })
           .expect(200)
           .end(() => {
+            assert(postSpy.firstCall.args[3].active === true);
             assert(postSpy.withArgs("/t", "screen").calledOnce);
             done();
           });

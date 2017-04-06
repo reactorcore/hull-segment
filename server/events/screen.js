@@ -11,7 +11,9 @@ export default function handleScreen(payload = {}, context = {}) {
   const screen = {
     ...payload,
     properties,
-    event: "screen"
+    event: "screen",
+    active: true
   };
+
   return track(screen, context);
 }

@@ -2,7 +2,7 @@ import { reduce } from "lodash";
 import scoped from "../scope-hull-client";
 
 export default function handleTrack(payload, { hull, metric }) {
-  const { context = {}, anonymousId, event, properties, userId, originalTimestamp, sentAt, receivedAt, integrations = {} } = payload;
+  const { context = {}, active, anonymousId, event, properties, userId, originalTimestamp, sentAt, receivedAt, integrations = {} } = payload;
 
   const { logger } = hull;
   const { page = {}, location = {}, userAgent, ip = "0" } = context;
@@ -22,7 +22,7 @@ export default function handleTrack(payload, { hull, metric }) {
     source: "segment",
     created_at, _bid, _sid,
     url, referrer, useragent: userAgent,
-    ip, latitude, longitude
+    ip, latitude, longitude, active
   }, (p, v, k) => {
     if (v !== undefined) {
       p[k] = v;

@@ -11,7 +11,8 @@ export default function handlePage(payload = {}, context = {}) {
   const page = {
     ...payload,
     properties,
-    event: "page"
+    event: "page",
+    active: true
   };
 
   return track(page, context);
