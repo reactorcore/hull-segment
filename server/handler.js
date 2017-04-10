@@ -65,9 +65,9 @@ function processHandlers(handlers, { Hull, onMetric }) {
       const eventHandlers = handlers[eventName];
 
       if (hull) {
-        hull.logger.info(`${eventName}.start`, JSON.stringify(message));
+        hull.logger.info(`${eventName}.start`, { message });
       } else {
-        Hull.logger.info(`${eventName}.start`, JSON.stringify(message));
+        Hull.logger.info(`${eventName}.start`, { message });
       }
 
       metric(`request.${eventName}`, 1);
