@@ -20,7 +20,7 @@ export default function updateUserFactory(analyticsClient) {
     // Ignore if write_key is not present
     const { write_key, handle_groups, public_id_field } = ship.settings || {};
     if (!write_key) {
-      hull.logger.info("No write_key for ship");
+      hull.logger.info("user.notification.skip", { reason: "no write key"});
       return false;
     }
 
@@ -41,9 +41,11 @@ export default function updateUserFactory(analyticsClient) {
     const userId = user[publicIdField];
     const groupId = user["traits_group/id"];
 
+    const loggingProperties = _.pick(user, "id", "email")
+
     // We have no identifier for the user, we have to skip
     if (!userId && !anonymousId) {
-      hull.logger.info("skip.user - no identifier", _.pick(user, "id", "email"));
+      hull.logger.info("user.notification.skip", { ...loggingProperties, reason: 'No Identifier (userId or anonymousId)' });
       return false;
     }
 
@@ -57,19 +59,17 @@ export default function updateUserFactory(analyticsClient) {
     const segment_ids = _.map(segments, "id");
     if (
       !ignoreFilters &&
-      synchronized_segments.length > 0 &&
+      synchronized_segments.length > 0 && //Should we move to "Send no one by default ?"
       !_.intersection(segment_ids, synchronized_segments).length
       ) {
-      hull.logger.debug(`skip.update for ${user.id} because not matching any segment`);
+      hull.logger.info("user.notification.skip", { ...loggingProperties, reason: "not matching any segment" });
       return false;
     }
 
     // Build traits that will be sent to Segment
     // Use hull_segments by default
 
-    const traits = {
-      hull_segments: _.map(segments, "name")
-    };
+    const traits = { hull_segments: _.map(segments, "name") };
 
     if (synchronized_properties.length > 0) {
       synchronized_properties.map((prop) => {
@@ -78,14 +78,9 @@ export default function updateUserFactory(analyticsClient) {
       });
     }
 
-    const integrations = {
-      Hull: false
-    };
+    const integrations = { Hull: false };
 
-    const context = {
-      active: false,
-      ip: 0,
-    };
+    const context = { active: false, ip: 0 };
 
     // Add group if available
     if (handle_groups && groupId && userId) {
@@ -99,33 +94,35 @@ export default function updateUserFactory(analyticsClient) {
         return group;
       }, {});
       if (!_.isEmpty(groupTraits)) {
-        hull.logger.debug("send.group", { groupId, userId, traits: groupTraits, context });
-        analytics.group({ groupId, anonymousId, userId, traits: groupTraits, context, integrations });
+        hull.logger.info("group.send", { ...loggingProperties, groupId, traits: groupTraits, context });
+        analytics.group({ ...loggingProperties, groupId, traits: groupTraits, context, integrations });
       }
     }
 
-    hull.logger.debug("send.identify", { userId, traits, context });
+    hull.logger.info("identify.send", { userId, traits, context });
     const ret = analytics.identify({ anonymousId, userId, traits, context, integrations });
 
     if (events && events.length > 0) {
       events.map(e => {
         // Don't forward events of source "segment" when forwarding disabled.
         if (e.event_source === "segment" && !forward_events) {
-          hull.logger.debug("event.skip.segment", { message: "segment event without forwarding" });
+          hull.logger.info("event.skip", { ...loggingProperties, reason: "Segment event without forwarding", event: e.event });
           return true;
         }
         if (send_events && send_events.length && !_.includes(send_events, e.event)) {
-          hull.logger.debug("event.skip.list", { message: "not included in event list", event: e.event });
+          hull.logger.info("event.skip", { ...loggingProperties, reason: "not included in event list", event: e.event });
           return true;
         }
 
-        hull.logger.debug("event.post", e);
+        hull.logger.debug("event.send", { ...loggingProperties, event: e.event });
 
         const { location = {}, page = {}, referrer = {}, os = {}, useragent, ip = 0 } = e.context || {};
         const { event, properties } = e;
         const { name, category } = properties;
         page.referrer = referrer.url;
+
         const type = (event === "page" || event === "screen") ? event : "track";
+
         let track = {
           anonymousId: e.anonymous_id || anonymousId,
           timestamp: new Date(e.created_at),
@@ -148,7 +145,6 @@ export default function updateUserFactory(analyticsClient) {
             properties: p
           };
           track.context.page = p;
-          hull.logger.debug("send.page", track);
           analytics.page(track);
         } else if (type === "screen") {
           track = {
@@ -157,13 +153,14 @@ export default function updateUserFactory(analyticsClient) {
             channel: "mobile",
             properties
           };
-          hull.logger.debug("send.screen", track);
           analytics.enqueue("screen", track);
         } else {
           track = { ...track, event, category };
-          hull.logger.debug(`send.${type}`);
           analytics.track(track);
         }
+
+        hull.logger.info(`${type}.send`, { ...loggingProperties, track });
+
         return true;
       });
     }
