@@ -59,17 +59,15 @@ function processHandlers(handlers, { Hull, onMetric }) {
       const { client: hull, ship } = req.hull;
       const { message } = req.segment;
 
-      const metric = (metricName, value) => {
-        return onMetric(metricName, value, ship || {});
-      };
+      const metric = (metricName, value) => onMetric(metricName, value, ship || {});
 
       const eventName = message.type;
       const eventHandlers = handlers[eventName];
 
       if (hull) {
-        hull.logger.debug("message", JSON.stringify(message));
+        hull.logger.info(`${eventName}.start`, { message });
       } else {
-        Hull.logger.debug("message", JSON.stringify(message));
+        Hull.logger.info(`${eventName}.start`, { message });
       }
 
       metric(`request.${eventName}`, 1);

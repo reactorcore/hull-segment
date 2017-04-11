@@ -30,7 +30,8 @@ module.exports = function server(options = {}) {
   app.get("/admin.html", hullClient({ hostSecret, fetchShip: false }), (req, res) => {
     const { config } = req.hull;
     const apiKey = jwt.encode(config, hostSecret);
-    res.render("admin.html", { apiKey });
+    const encoded = new Buffer(apiKey).toString("base64");
+    res.render("admin.html", { apiKey, encoded });
   });
 
   const analyticsClient = analyticsClientFactory();
