@@ -8,8 +8,10 @@ export default function scope(hull, user = {} /* , context = {}*/) {
   const as = {};
 
   if (hullId || userId) {
-    if (hullId) { as.id = hullId; }
-    // If we have a userId
+    if (hullId) {
+      as.id = hullId;
+    }
+    // If we have a userId (primary ID from external tool))
     if (userId) {
       // and it starts with 'auth0'
       if (userId.indexOf("auth0") === 0) {
@@ -19,11 +21,13 @@ export default function scope(hull, user = {} /* , context = {}*/) {
         // else drop it in the AnonymousId field
         as.guest_id = userId;
       }
-    } else if (anonymousId) {
-      // fallback to anonymousId because we don't have a UserId
-      as.guest_id = anonymousId;
     }
   }
+
+  if (anonymousId) {
+    as.guest_id = anonymousId;
+  }
+
 
   if (traits.email && EMAIL_REGEXP.test(traits.email)) {
     as.email = traits.email.toLowerCase();
