@@ -31,9 +31,6 @@ module.exports = function server(options = {}) {
     const { config } = req.hull;
     const apiKey = jwt.encode(config, hostSecret);
     const encoded = new Buffer(apiKey).toString("base64");
-    console.log("-----------");
-    console.log(encoded);
-    console.log("-----------");
     res.render("admin.html", { apiKey, encoded });
   });
 
