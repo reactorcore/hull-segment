@@ -1,4 +1,5 @@
 const EMAIL_REGEXP = /([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})/i;
+const TEACHABLE_REGEX = /^[0-9]{7}$/;
 
 export default function scope(hull, user = {} /* , context = {}*/) {
   const { hullId, userId, anonymousId, traits = {} } = user;
@@ -17,8 +18,13 @@ export default function scope(hull, user = {} /* , context = {}*/) {
       if (userId.indexOf("auth0") === 0) {
         // then use it as our External ID
         as.external_id = userId;
+      } else if (EMAIL_REGEXP.test(userId)) {
+        // prevent emails set as userIds from polluting the system
+        as.email = userId.toLowerCase();
+      } else if (TEACHABLE_REGEX.test(userId)) {
+        // TODO: add teachable IDs to traits
+        as.guest_id = `teachable:${userId}`;
       } else {
-        // else drop it in the AnonymousId field
         as.guest_id = userId;
       }
     }
