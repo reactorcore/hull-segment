@@ -61,7 +61,7 @@ export default function handleIdentify(payload, { hull, metric /* , ship*/ }) {
       },
       error => {
         metric("request.identify.updateUser.error");
-        logger.info("identify.error", { userId, anonymousId, error });
+        logger.debug("identify.error", { userId, anonymousId, error });
       }
     );
 

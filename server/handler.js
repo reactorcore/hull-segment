@@ -65,9 +65,9 @@ function processHandlers(handlers, { Hull, onMetric }) {
       const eventHandlers = handlers[eventName];
 
       if (hull) {
-        hull.logger.info(`${eventName}.start`, { message });
+        hull.logger.debug(`${eventName}.start`, { message });
       } else {
-        Hull.logger.info(`${eventName}.start`, { message });
+        Hull.logger.debug(`${eventName}.start`, { message });
       }
 
       metric(`request.${eventName}`, 1);
@@ -143,7 +143,7 @@ module.exports = function SegmentHandler(options = {}) {
       if (err.status === 500) {
         data.stack = err.stack;
       }
-      Hull.logger.info(err.message, data);
+      Hull.logger.debug(err.message, data);
     }
     /*
       this is there just to make eslint not thow an error

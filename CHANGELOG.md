@@ -1,6 +1,7 @@
 ## v0.0.4
 - standardize log messages
 - update Build & Test dependencies
+- adds self-hosted installation information
 
 ## v0.0.3
 - change logs format to JSON
