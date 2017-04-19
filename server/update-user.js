@@ -16,11 +16,13 @@ export default function updateUserFactory(analyticsClient) {
       return false;
     }
 
+    const loggingProperties = _.pick(user, "id", "email", "external_id");
+
     // Configure Analytics.js with write key
     // Ignore if write_key is not present
     const { write_key, handle_groups, public_id_field } = ship.settings || {};
     if (!write_key) {
-      hull.logger.info("outgoing.user.skip", { reason: "no write key"});
+      hull.logger.info("outgoing.user.skip", { ...loggingProperties, reason: "no write key"});
       return false;
     }
 
@@ -40,8 +42,6 @@ export default function updateUserFactory(analyticsClient) {
 
     const userId = user[publicIdField];
     const groupId = user["traits_group/id"];
-
-    const loggingProperties = _.pick(user, "id", "email");
 
     // We have no identifier for the user, we have to skip
     if (!userId && !anonymousId) {
