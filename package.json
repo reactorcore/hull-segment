@@ -1,7 +1,7 @@
 {
   "name": "hull-segment",
   "description": "Install Segment in your site",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "homepage": "https://github.com/hull-ships/hull-segment",
   "license": "MIT",
   "main": "dist/ship.js",
@@ -22,6 +22,7 @@
     "url": "https://github.com/hull-ships/hull-segment/issues"
   },
   "scripts": {
+    "ngrok": "ngrok http 8082 --region eu --subdomain segment",
     "build": "npm run clean && npm run build:server && npm run build:client",
     "build:client": "NODE_ENV=production ./node_modules/.bin/webpack --config ./webpack.config.js --progress --profile --colors",
     "build:server": "./node_modules/.bin/babel server -d lib",
@@ -68,16 +69,16 @@
   },
   "devDependencies": {
     "babel-core": "^6.10.4",
-    "babel-eslint": "^6.0.5",
+    "babel-eslint": "^7.2.1",
     "babel-loader": "^6.2.4",
-    "eslint": "^2.13.1",
-    "eslint-config-airbnb-base": "^3.0.1",
-    "eslint-plugin-import": "^1.9.2",
-    "mocha": "^2.5.3",
+    "eslint": "^3.19.0",
+    "eslint-config-airbnb-base": "^11.1.3",
+    "eslint-plugin-import": "^2.2.0",
+    "mocha": "^3.2.0",
     "nodemon": "^1.10.0",
     "sinon": "^1.17.4",
-    "supertest": "^1.2.0",
-    "updtr": "^0.1.15",
-    "watch": "^0.19.1"
+    "supertest": "^3.0.0",
+    "updtr": "^1.0.0",
+    "watch": "^1.0.2"
   }
 }
