@@ -140,7 +140,7 @@ export class GroupBatchHandler {
 
         const users = values(Object.assign({}, currentUsers, groupUsers));
 
-        this.hull.logger.info("group.flush", { stats: this.stats, shipId: this.ship.id, groupId, users: users.length, traits });
+        this.hull.logger.debug("group.flush", { stats: this.stats, shipId: this.ship.id, groupId, users: users.length, traits });
 
         return this.updateUsers(users, traits).then((res) => {
           this.status = "idle";

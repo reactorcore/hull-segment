@@ -26,6 +26,19 @@
           </fieldset>
         </div>
       </div>
+
+      <div class="text-center alert alert-warning">
+        <p>
+          <em>
+            For self-hosted Connectors, use a Segment Webhook instead of the packaged integration.
+            <br/>
+            Add the following URL and Header:
+          </em>
+        </p>
+        <hr />
+        <input class="form-control mb-1" value="https://<%= hostname %>/segment/" />
+        <textarea class="form-control" rows="5">Authorization: "Basic <%= encoded %>"</textarea>
+      </div>
     </div>
     <style type="text/css" media="screen">
       legend { 
