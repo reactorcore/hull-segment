@@ -82,22 +82,27 @@ export default function updateUserFactory(analyticsClient) {
 
     const context = { active: false, ip: 0 };
 
-    // Add group if available
-    if (handle_groups && groupId && userId) {
-      context.groupId = groupId;
-      const groupTraits = _.reduce(user, (group, value, key) => {
-        const mk = key.match(/^traits_group\/(.*)/);
-        const groupKey = mk && mk[1];
-        if (groupKey && groupKey !== "id") {
-          group[groupKey] = value;
+    try {
+      // Add group if available
+      if (handle_groups && groupId && userId) {
+        context.groupId = groupId;
+        const groupTraits = _.reduce(user, (group, value, key) => {
+          const mk = key.match(/^traits_group\/(.*)/);
+          const groupKey = mk && mk[1];
+          if (groupKey && groupKey !== "id") {
+            group[groupKey] = value;
+          }
+          return group;
+        }, {});
+        if (!_.isEmpty(groupTraits)) {
+          hull.logger.debug("group.send", { ...loggingProperties, groupId, traits: groupTraits, context });
+          analytics.group({ ...loggingProperties, groupId, traits: groupTraits, context, integrations });
         }
-        return group;
-      }, {});
-      if (!_.isEmpty(groupTraits)) {
-        hull.logger.debug("group.send", { ...loggingProperties, groupId, traits: groupTraits, context });
-        analytics.group({ ...loggingProperties, groupId, traits: groupTraits, context, integrations });
       }
+    } catch (err) {
+      console.warn("Error processing group update", err);
     }
+
 
     hull.logger.debug("identify.send", { userId, traits, context });
     const ret = analytics.identify({ anonymousId, userId, traits, context, integrations });
