@@ -22,7 +22,7 @@ export default function updateUserFactory(analyticsClient) {
     // Ignore if write_key is not present
     const { write_key, handle_groups, public_id_field } = ship.settings || {};
     if (!write_key) {
-      hull.logger.info("outgoing.user.skip", { ...loggingProperties, reason: "no write key"});
+      hull.logger.info("outgoing.user.skip", { ...loggingProperties, reason: "no write key" });
       return false;
     }
 
@@ -59,7 +59,7 @@ export default function updateUserFactory(analyticsClient) {
     const segment_ids = _.map(segments, "id");
     if (
       !ignoreFilters &&
-      synchronized_segments.length > 0 && //Should we move to "Send no one by default ?"
+      synchronized_segments.length > 0 && // Should we move to "Send no one by default ?"
       !_.intersection(segment_ids, synchronized_segments).length
       ) {
       hull.logger.info("outgoing.user.skip", { ...loggingProperties, reason: "not matching any segment", segment_ids });
