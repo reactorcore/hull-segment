@@ -31,7 +31,8 @@ module.exports = function server(options = {}) {
     const { config } = req.hull;
     const apiKey = jwt.encode(config, hostSecret);
     const encoded = new Buffer(apiKey).toString("base64");
-    res.render("admin.html", { apiKey, encoded });
+    const hostname = req.hostname;
+    res.render("admin.html", { apiKey, encoded, hostname });
   });
 
   const analyticsClient = analyticsClientFactory();
@@ -47,7 +48,7 @@ module.exports = function server(options = {}) {
     hostSecret,
     groupTraits: false,
     handler: (notifications = [], context) => {
-      context.hull.logger.info("batch.handle", { processed: context.processed });
+      context.hull.logger.debug("batch.handle", { processed: context.processed });
       notifications.map(n => updateUser(analyticsClient)(n, { ...context, ignoreFilters: true }));
     }
   }));
